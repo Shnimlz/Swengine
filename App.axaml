@@ -1,0 +1,18 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:labs="using:Avalonia.Labs.Controls;assembly=Avalonia.Labs.Gif"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="swengine.desktop.App"
+             xmlns:local="using:swengine.desktop"
+             xmlns:ui="using:FluentAvalonia.UI.Controls"
+            xmlns:uip="using:FluentAvalonia.UI.Controls.Primitives" 
+          xmlns:sty="using:FluentAvalonia.Styling"
+          xmlns:gif="clr-namespace:Avalonia.Labs.Controls;assembly=Avalonia.Labs.Gif"
+             RequestedThemeVariant="Dark">
+             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="avares://AsyncImageLoader.Avalonia/AdvancedImage.axaml" />
+        <sty:FluentAvaloniaTheme />
+    </Application.Styles>
+</Application>

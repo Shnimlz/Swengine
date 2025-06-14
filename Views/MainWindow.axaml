@@ -1,0 +1,202 @@
+<!--
+Ventana principal de la aplicación Swengine con animaciones corregidas usando pseudoclases.
+-->
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="swengine.desktop.Views.MainWindow"
+        xmlns:labs="using:Avalonia.Labs.Controls;assembly=Avalonia.Labs.Gif"
+        xmlns:vm="using:swengine.desktop.ViewModels"
+        xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        WindowStartupLocation="CenterScreen"
+        xmlns:local="using:swengine.desktop" 
+        xmlns:models="using:swengine.desktop.Models"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="swengine.desktop">
+    
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <!-- Estilos con animaciones usando propiedades directas -->
+    <Window.Styles>
+        <!-- Estilos para el contenedor de búsqueda -->
+        <Style Selector="Border#SearchContainer">
+            <Setter Property="Width" Value="60"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Width" Duration="0:0:0.4" Easing="CubicEaseOut"/>
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <!-- Estilos para el ícono de búsqueda -->
+        <Style Selector="Button#SearchIcon">
+            <Setter Property="Opacity" Value="0.9"/>
+            <Setter Property="IsVisible" Value="True"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.3" Easing="CubicEaseOut"/>
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <!-- 🔧 Estilo completamente sobrescrito del TextBox -->
+        <Style Selector="TextBox#SearchTextBox">
+            <Setter Property="Opacity" Value="0"/>
+            
+            <Setter Property="IsVisible" Value="False"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="20,0,70,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="CornerRadius" Value="30"/>
+            <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="30"
+                        Padding="{TemplateBinding Padding}">
+                <ScrollViewer Name="PART_ContentHost">
+                    <TextPresenter Name="PART_TextPresenter"
+                                Text="{TemplateBinding Text}"
+                                VerticalAlignment="Center"
+                                Margin="0" />
+                </ScrollViewer>
+                </Border>
+            </ControlTemplate>
+            </Setter>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.4" Easing="CubicEaseOut"/>
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <!-- Estilos para el botón de búsqueda -->
+        <Style Selector="Button#SearchButton">
+            <Setter Property="Opacity" Value="0"/>
+            <Setter Property="IsVisible" Value="False"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.3" Easing="CubicEaseOut"/>
+                </Transitions>
+            </Setter>
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="Auto,Auto,*">
+        <ProgressBar IsIndeterminate="True" Grid.Row="0" IsVisible="{Binding DataLoading}"></ProgressBar>
+        <StackPanel Grid.Row="1">
+            <StackPanel.Background>
+                <SolidColorBrush Color="#19192c" Opacity="0.5"/>
+            </StackPanel.Background>
+
+            <!-- Barra superior unificada con anchos ajustados para 1280x720 -->
+            <Grid Margin="20,10,20,0" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="450"/> <!-- Botones izquierda -->
+                    <ColumnDefinition Width="*"/>   <!-- Buscador centro -->
+                    <ColumnDefinition Width="450"/> <!-- Combos derecha -->
+                </Grid.ColumnDefinitions>
+
+                <!-- Botones Upload y Scripts -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Column="0" Margin="0,0,30,0">
+                    <Button Command="{Binding OpenUploadDialog}" Width="100" Height="40" Margin="5,0">Upload</Button>
+                    <Button Command="{Binding OpenCustomScriptsDialog}" Width="100" Height="40" Margin="5,0">Scripts</Button>
+                    <Button Command="{Binding RefreshCommand}" Width="100" Height="40" Margin="5,0">Refresh</Button>
+                </StackPanel>
+
+                <!-- Área de búsqueda animada en Border -->
+                <Border x:Name="SearchContainer" Height="40" CornerRadius="20" BorderThickness="0" BorderBrush="Transparent" Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Column="1">
+                    <Grid HorizontalAlignment="Left">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="50"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="50"/>
+                        </Grid.ColumnDefinitions>
+                        <Button x:Name="SearchIcon" 
+                                Background="Transparent" 
+                                BorderThickness="0"
+                                Width="40" Height="40"
+                                Grid.Column="0"
+                                HorizontalAlignment="Center"
+                                Click="OnSearchIconClick">
+                            <Path Data="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" 
+                                  Fill="White" 
+                                  Width="20" Height="20"/>
+                        </Button>
+                        <TextBox x:Name="SearchTextBox"
+                                 Grid.Column="1"
+                                 Width="250" Height="40"
+                                 Watermark="Buscar wallpapers online..."
+                                 Text="{Binding SearchTerm}"
+                                 KeyDown="OnSearchKeyDown"
+                                 Margin="5,0,5,0"/>
+                        <Button x:Name="SearchButton"
+                                Grid.Column="2"
+                                Width="40" Height="40"
+                                CornerRadius="20"
+                                Background="#19192c"
+                                BorderThickness="0"
+                                HorizontalAlignment="Center"
+                                Margin="0,0,0,0"
+                                Command="{Binding SearchCommand}">
+                            <Path Data="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" 
+                                  Fill="White" 
+                                  Width="18" Height="18"/>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- ComboBox Providers y Backend en subgrid -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Column="2" Margin="30,0,0,0">
+                    <ComboBox ItemsSource="{Binding Providers}" SelectedItem="{Binding SelectedProvider}" Width="140" Height="40" Margin="0,0,10,0"/>
+                    <ComboBox ItemsSource="{Binding Backends}" SelectedItem="{Binding SelectedBackend}" Width="140" Height="40"/>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+
+        <!-- Sin resultados -->
+        <Panel Grid.Row="2" IsVisible="{Binding !WallpaperResponses.Count}">
+            <TextBlock Text="NO RESULTS" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="40"/>
+        </Panel>
+
+        <!-- Resultados -->
+        <ScrollViewer Grid.Row="2" x:Name="ScrollViewer">
+            <ScrollViewer.Background>
+                <SolidColorBrush Color="#19192c" Opacity="0.5"/>
+            </ScrollViewer.Background>
+            <ListBox ItemsSource="{Binding WallpaperResponses}" HorizontalAlignment="Center" Margin="0,30,0,0" SelectionMode="Single" Background="Transparent">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Height="240" Width="420" Margin="20,10" Tag="{Binding }" Tapped="OpenApplyWindow" HorizontalAlignment="Center" VerticalAlignment="Top">
+                            <StackPanel.Styles>
+                                <Style Selector="StackPanel:pointerover">
+                                    <Setter Property="Background" Value="{DynamicResource SystemAccentColor}"/>
+                                </Style>
+                            </StackPanel.Styles>
+                            <asyncImageLoader:AdvancedImage Source="{Binding Thumbnail, FallbackValue=/Assets/placeholder.png}" Height="180" Width="380" VerticalAlignment="Center" HorizontalAlignment="Center" Loader="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).BaseLoader}" Stretch="UniformToFill" Margin="0,10,0,10"/>
+                            <TextBlock Text="{Binding Title}" Margin="0,10,0,0" TextAlignment="Center"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </ScrollViewer>
+
+        <!-- Cargando más -->
+        <TextBlock VerticalAlignment="Top" HorizontalAlignment="Center" FontSize="15" IsVisible="{Binding InfinteScrollLoading}">
+            Loading more...
+        </TextBlock>
+    </Grid>
+</Window>
