@@ -3,6 +3,8 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
+/swengine-revanced
+/tests
 # dotenv files
 .env
 dist
