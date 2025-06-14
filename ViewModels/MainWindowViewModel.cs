@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
+using System.IO;
 using System.Threading;
 using AvaloniaEdit.Document;
 
@@ -36,22 +38,22 @@ public partial class MainWindowViewModel : ObservableObject {
 
     public IBgsProvider BgsProvider;
     public string[] Providers => new[] {
-        "Motionbgs.com",
-        "Moewalls.com",
-        "Desktophut.com",
-        "Mylivewallpapers.com",
-        "Wallhaven.cc",
-        "Wallhaven.cc(random)",
-        "Wallpaperscraft.com",
-        "Wallpapers-clan.com",
+        "Motionbgs",
+        "Moewalls",
+        "Desktophut",
+        "Mylivewallpapers",
+        "Wallhaven",
+        "Wallhaven(NSFW)",
+        "Wallhaven(random)",
+        "Wallpaperscraft",
+        "Wallpapers-clan",
         "Wallpaper Engine",
-        "Wallpaper Engine Scene"
     };
 
     public string[] Backends => new[] { "SWWW", "PLASMA", "GNOME" };
     private bool _appendingToInfinteScroll = false;
 
-    private string _selectedProvider = "Moewalls.com";
+    private string _selectedProvider = "Moewalls";
     private string _selectedBackend = "SWWW";
     public event EventHandler<EventArgs> RequestMoveToTop;
     public event EventHandler<EventArgs> RequestClearImageLoader;
@@ -103,38 +105,39 @@ public partial class MainWindowViewModel : ObservableObject {
     //     DataLoading = false;
     // }
 
-    private void SetProvider() {
+    private async void SetProvider() {
         switch (SelectedProvider) {
-            case "Motionbgs.com":
+            case "Motionbgs":
                 BgsProvider = new MotionBgsService();
                 break;
-            case "Moewalls.com":
+            case "Moewalls":
                 BgsProvider = new MoewallsService();
 
                 break;
-            case "Wallhaven.cc":
+            case "Wallhaven":
                 BgsProvider = new WallHavenService();
                 break;
-            case "Mylivewallpapers.com":
+            case "Mylivewallpapers":
                 BgsProvider = new MyLiveWallpapersService();
                 break;
-            case "Wallpaperscraft.com":
+            case "Wallpaperscraft":
                 BgsProvider = new WallpapersCraftService();
                 break;
-            case "Wallpapers-clan.com":
+            case "Wallpapers-clan":
                 BgsProvider = new WallpapersClanService();
                 break;
-            case "Wallhaven.cc(random)":
+            case "Wallhaven(random)":
                 BgsProvider = new WallHavenRandomService();
                 break;
-            case "Desktophut.com":
+            case "Wallhaven(NSFW)":
+                BgsProvider = new WallHavenNSFWService();
+                break;
+            case "Desktophut":
                 BgsProvider = new DesktopHutService();
                 break;
             case "Wallpaper Engine":
                 BgsProvider = new WallpaperEngineService();
-                break;
-            case "Wallpaper Engine Scene (Test)":
-                BgsProvider = new WallpaperEngineSceneTestService();
+                await CheckWallpaperEngineDirectory();
                 break;
             default:
                 break;
@@ -149,6 +152,43 @@ public partial class MainWindowViewModel : ObservableObject {
         } catch { }
         Search();
     }
+
+    private async Task CheckWallpaperEngineDirectory()
+    {
+        try
+        {
+            await swengine.desktop.Helpers.WallpaperEngineHelper.GetWallpapersAsync();
+        }
+        catch (DirectoryNotFoundException)
+        {
+            await ShowWarningDialog("Wallpaper Engine no está instalado o no se encontró la carpeta correspondiente.\n\nPor favor, instala Wallpaper Engine desde Steam e intenta de nuevo.");
+        }
+    }
+
+    private async Task ShowWarningDialog(string message)
+    {
+        var dialog = new Avalonia.Controls.Window
+        {
+            Title = "Advertencia",
+            Width = 400,
+            Height = 180,
+            WindowStartupLocation = Avalonia.Controls.WindowStartupLocation.CenterOwner,
+            Content = new Avalonia.Controls.TextBlock
+            {
+                Text = message,
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                Margin = new Avalonia.Thickness(16),
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+            }
+        };
+        var mainWindow = (Avalonia.Application.Current.ApplicationLifetime as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+        if (mainWindow != null)
+            await dialog.ShowDialog(mainWindow);
+        else
+            dialog.Show();
+    }
+
     private void SetBackend() {
 
     }
@@ -170,13 +210,20 @@ public partial class MainWindowViewModel : ObservableObject {
         DataLoading = true;
 
         if (_searchDebounceToken.IsCancellationRequested) return;
-        List<WallpaperResponse> results;
-        if (SearchTerm.Length == 0) {
-            if (_searchDebounceToken.IsCancellationRequested) return;
-            results = await BgsProvider.LatestAsync(Page: CurrentPage);
-        } else {
-            if (_searchDebounceToken.IsCancellationRequested) return;
-            results = await BgsProvider.SearchAsync(SearchTerm, CurrentPage);
+        List<WallpaperResponse> results = null;
+        try {
+            if (SearchTerm.Length == 0) {
+                if (_searchDebounceToken.IsCancellationRequested) return;
+                results = await BgsProvider.LatestAsync(Page: CurrentPage);
+            } else {
+                if (_searchDebounceToken.IsCancellationRequested) return;
+                results = await BgsProvider.SearchAsync(SearchTerm, CurrentPage);
+            }
+        } catch (swengine.desktop.Scrapers.WallHavenApiException ex) {
+            await ShowWarningDialog($"WallHaven API: {ex.Message}");
+        } catch (Exception ex) {
+            // Otros errores generales
+            await ShowWarningDialog($"Error inesperado: {ex.Message}");
         }
         ClearImageLoader();
         WallpaperResponses = results;

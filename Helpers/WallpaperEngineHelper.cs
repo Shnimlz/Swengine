@@ -14,7 +14,7 @@ public static class WallpaperEngineHelper
     {
         if (!Directory.Exists(WallpaperEnginePath))
         {
-            return Array.Empty<string>();
+            throw new DirectoryNotFoundException("No se encontró la carpeta de Wallpaper Engine. Asegúrate de tener instalado Wallpaper Engine por Steam en este usuario.");
         }
 
         return await Task.Run(() =>
@@ -29,7 +29,7 @@ public static class WallpaperEngineHelper
     {
         if (!Directory.Exists(WallpaperEnginePath))
         {
-            return Array.Empty<(string, string)>();
+            throw new DirectoryNotFoundException("No se encontró la carpeta de Wallpaper Engine. Asegúrate de tener instalado Wallpaper Engine por Steam en este usuario.");
         }
 
         return await Task.Run(() =>

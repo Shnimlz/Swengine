@@ -51,7 +51,7 @@ public partial class ApplyWindowViewModel : DialogViewModelBase
     [ObservableProperty] private ApplicationStatusWrapper applicationStatusWrapper = new();
 
     //Initialize Native Libvlc client for playing the wallpaper preview
-    private readonly LibVLC _libVlc = new LibVLC("--input-repeat=2");
+    private readonly LibVLC _libVlc = new LibVLC("--avcodec-hw=none");
 
     public ApplyWindowViewModel()
     {

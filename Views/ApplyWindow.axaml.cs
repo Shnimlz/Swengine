@@ -17,8 +17,6 @@ public partial class ApplyWindow : Window
         {
             var datacontext = DataContext as ApplyWindowViewModel;
             video.MediaPlayer = datacontext.MediaPlayer;
-            // Disable hardware acceleration
-            // video.MediaPlayer.SetOption("avcodec-hw", "none");
         });
         Closed += (sender, args) =>
         {

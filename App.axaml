@@ -8,7 +8,6 @@
           xmlns:sty="using:FluentAvalonia.Styling"
           xmlns:gif="clr-namespace:Avalonia.Labs.Controls;assembly=Avalonia.Labs.Gif"
              RequestedThemeVariant="Dark">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
     <Application.Styles>
         <FluentTheme />

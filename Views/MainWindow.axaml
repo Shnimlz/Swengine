@@ -16,7 +16,9 @@ Ventana principal de la aplicación Swengine con animaciones corregidas usando p
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Title="swengine.desktop">
-    
+    <Window.Background>
+        <SolidColorBrush Color="#19192c"/>
+    </Window.Background>
     <Design.DataContext>
         <vm:MainWindowViewModel/>
     </Design.DataContext>
@@ -90,7 +92,8 @@ Ventana principal de la aplicación Swengine con animaciones corregidas usando p
         </Style>
     </Window.Styles>
 
-    <Grid RowDefinitions="Auto,Auto,*">
+    <Grid RowDefinitions="Auto,Auto,*" Background="#19192c">
+        <TextBlock Text="Swengine modded by Shnimlz" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
         <ProgressBar IsIndeterminate="True" Grid.Row="0" IsVisible="{Binding DataLoading}"></ProgressBar>
         <StackPanel Grid.Row="1">
             <StackPanel.Background>
@@ -98,7 +101,7 @@ Ventana principal de la aplicación Swengine con animaciones corregidas usando p
             </StackPanel.Background>
 
             <!-- Barra superior unificada con anchos ajustados para 1280x720 -->
-            <Grid Margin="20,10,20,0" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+            <Grid Margin="10,10,20,10" HorizontalAlignment="Stretch" VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="450"/> <!-- Botones izquierda -->
                     <ColumnDefinition Width="*"/>   <!-- Buscador centro -->
@@ -156,8 +159,14 @@ Ventana principal de la aplicación Swengine con animaciones corregidas usando p
 
                 <!-- ComboBox Providers y Backend en subgrid -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Column="2" Margin="30,0,0,0">
-                    <ComboBox ItemsSource="{Binding Providers}" SelectedItem="{Binding SelectedProvider}" Width="140" Height="40" Margin="0,0,10,0"/>
-                    <ComboBox ItemsSource="{Binding Backends}" SelectedItem="{Binding SelectedBackend}" Width="140" Height="40"/>
+                    <ComboBox ItemsSource="{Binding Providers}"
+                        SelectedItem="{Binding SelectedProvider}"
+                        Width="140" Height="40" Margin="0,0,10,0"
+                        HorizontalContentAlignment="Center"/>
+                    <ComboBox ItemsSource="{Binding Backends}"
+                        SelectedItem="{Binding SelectedBackend}"
+                        Width="140" Height="40"
+                        HorizontalContentAlignment="Center"/>
                 </StackPanel>
             </Grid>
         </StackPanel>
@@ -172,7 +181,7 @@ Ventana principal de la aplicación Swengine con animaciones corregidas usando p
             <ScrollViewer.Background>
                 <SolidColorBrush Color="#19192c" Opacity="0.5"/>
             </ScrollViewer.Background>
-            <ListBox ItemsSource="{Binding WallpaperResponses}" HorizontalAlignment="Center" Margin="0,30,0,0" SelectionMode="Single" Background="Transparent">
+            <ListBox ItemsSource="{Binding WallpaperResponses}" HorizontalAlignment="Center" Margin="0,30,0,20" SelectionMode="Single" Background="Transparent">
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" />
@@ -187,16 +196,12 @@ Ventana principal de la aplicación Swengine con animaciones corregidas usando p
                                 </Style>
                             </StackPanel.Styles>
                             <asyncImageLoader:AdvancedImage Source="{Binding Thumbnail, FallbackValue=/Assets/placeholder.png}" Height="180" Width="380" VerticalAlignment="Center" HorizontalAlignment="Center" Loader="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).BaseLoader}" Stretch="UniformToFill" Margin="0,10,0,10"/>
-                            <TextBlock Text="{Binding Title}" Margin="0,10,0,0" TextAlignment="Center"/>
+                            <TextBlock Text="{Binding Title}" FontSize="16" FontFamily="{StaticResource NunitoFont}" Margin="0,10,0,0" TextAlignment="Center"/>
                         </StackPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
         </ScrollViewer>
 
-        <!-- Cargando más -->
-        <TextBlock VerticalAlignment="Top" HorizontalAlignment="Center" FontSize="15" IsVisible="{Binding InfinteScrollLoading}">
-            Loading more...
-        </TextBlock>
     </Grid>
 </Window>
