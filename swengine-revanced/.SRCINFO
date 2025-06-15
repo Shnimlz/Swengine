@@ -1,0 +1,15 @@
+pkgbase = swengine-revanced
+	pkgdesc = Download or upload your wallpapers or use the ones downloaded from wallpaper engine with Sww
+	pkgver = 0.9
+	pkgrel = 1
+	url = https://github.com/Shnimlz/Swengine
+	arch = x86_64
+	makedepends = dotnet-sdk
+	makedepends = git
+	depends = vlc
+	depends = ffmpeg
+	depends = swww
+	source = swengine.desktop
+	md5sums = 6dca3a767dd3c85369aaad5affae54d4
+
+pkgname = swengine-revanced
