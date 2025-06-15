@@ -17,10 +17,18 @@ namespace swengine.desktop.ViewModels;
 public partial class MainWindowViewModel : ObservableObject {
     public IRelayCommand SearchCommand { get; }
     public IRelayCommand RefreshCommand { get; }
-    private void RefreshWallpapers()
+    private async void RefreshWallpapers()
     {
-        CurrentPage++;
-        Search();
+        if (SelectedProvider == "Wallpaper Engine")
+        {
+            await CheckWallpaperEngineDirectory();
+            // Asumiendo que CheckWallpaperEngineDirectory() actualiza la lista de wallpapers desde el directorio
+        }
+        else
+        {
+            CurrentPage++;
+            Search();
+        }
     }
 
     private static readonly Random _rnd = new();
