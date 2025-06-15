@@ -1,7 +1,7 @@
 <h1 align="center">Swengine</h1>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Shnimlz/Swengine/main/Assets/logo.png" width="160" alt="Swengine logo"/>
+  <img src="https://i.imgur.com/DNUkC6w.png" alt="Swengine logo"/>
 </p>
 
 **Swengine** es una aplicación de escritorio para Linux que te permite gestionar, descargar, subir y aplicar wallpapers animados o estáticos desde múltiples fuentes, incluyendo integración directa con Wallpaper Engine y soporte para Swww.
