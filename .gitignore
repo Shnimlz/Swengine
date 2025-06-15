@@ -3,7 +3,6 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
-/swengine-revanced
 ./testing
 ./tesing/*
 # dotenv files

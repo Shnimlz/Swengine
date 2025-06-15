@@ -22,7 +22,6 @@ public partial class MainWindowViewModel : ObservableObject {
         if (SelectedProvider == "Wallpaper Engine")
         {
             await CheckWallpaperEngineDirectory();
-            // Asumiendo que CheckWallpaperEngineDirectory() actualiza la lista de wallpapers desde el directorio
         }
         else
         {
@@ -34,10 +33,10 @@ public partial class MainWindowViewModel : ObservableObject {
     private static readonly Random _rnd = new();
 
     public MainWindowViewModel() {
-        CurrentPage = _rnd.Next(1, 11); // Página aleatoria entre 1 y 10
+        CurrentPage = _rnd.Next(1, 11); 
         SearchCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(Search);
         RefreshCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(RefreshWallpapers);
-        //set provider initially to motionbgs.com
+      
         SetProvider();
         Search();
         RequestMoveToTop += RequestMoveToTop;
@@ -94,7 +93,7 @@ public partial class MainWindowViewModel : ObservableObject {
         Search();
     }
 
-    //current page
+
     [ObservableProperty] private int currentPage = 1;
     [ObservableProperty] private List<WallpaperResponse> wallpaperResponses;
     [ObservableProperty] private bool dataLoading = false;
@@ -106,12 +105,6 @@ public partial class MainWindowViewModel : ObservableObject {
         Text = ""
     };
     [ObservableProperty] public bool infinteScrollLoading = false;
-    // async void GetWallpapers()
-    // {
-    //     DataLoading = true;
-    //     WallpaperResponses = await BgsProvider.LatestAsync(Page: CurrentPage);
-    //     DataLoading = false;
-    // }
 
     private async void SetProvider() {
         switch (SelectedProvider) {
@@ -150,8 +143,7 @@ public partial class MainWindowViewModel : ObservableObject {
             default:
                 break;
         }
-        //changing provider should reset _infinteScrollPage to the current page
-        //
+
         _infiniteScrollPage = CurrentPage;
         _appendingToInfinteScroll = false;
         RequestMoveToTop?.Invoke(this, EventArgs.Empty);
@@ -230,7 +222,6 @@ public partial class MainWindowViewModel : ObservableObject {
         } catch (swengine.desktop.Scrapers.WallHavenApiException ex) {
             await ShowWarningDialog($"WallHaven API: {ex.Message}");
         } catch (Exception ex) {
-            // Otros errores generales
             await ShowWarningDialog($"Error inesperado: {ex.Message}");
         }
         ClearImageLoader();
