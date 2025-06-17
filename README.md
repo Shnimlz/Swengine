@@ -1,7 +1,9 @@
-<h1 align="center">Swengine</h1>
+<!-- Swengine logo -->
+<!-- Icono y texto alado  -->
+<h1 align="center"><img src="https://i.imgur.com/FsoLb79.png" alt="Swengine logo" width="40" style="vertical-align:middle;"/>&nbsp;Swengine</h1>
 
 <p align="center">
-  <img src="https://i.imgur.com/DNUkC6w.png" alt="Swengine logo"/>
+  <img src="https://i.imgur.com/3zvwTU1.png" alt="Swengine logo"/>
 </p>
 
 **Swengine** es una aplicación de escritorio para Linux que te permite gestionar, descargar, subir y aplicar wallpapers animados o estáticos desde múltiples fuentes, incluyendo integración directa con Wallpaper Engine y soporte para Swww.
@@ -24,6 +26,7 @@
 
 ```sh
 yay -S swengine-revanced
+o
 paru -S swengine-revanced
 ```
 
@@ -36,6 +39,18 @@ makepkg -si
 ```
 
 Esto compilará la app y la instalará en tu sistema.
+
+---
+
+## ⚠️ Carpeta necesaria para integración con Wallpaper Engine
+
+Para que Swengine pueda importar wallpapers desde Wallpaper Engine, debes tener instalada la aplicación Wallpaper Engine desde Steam en el usuario actual. Es imprescindible que exista la siguiente carpeta en tu sistema:
+
+```
+/home/[tu_usuario]/.local/share/Steam/steamapps/workshop/content/431960/
+```
+
+Esta carpeta es creada automáticamente por Steam al instalar y usar Wallpaper Engine. Si no existe, Swengine no podrá importar wallpapers desde Wallpaper Engine.
 
 ---
 
