@@ -11,12 +11,16 @@ using CommunityToolkit.Mvvm.Input;
 using AsyncImageLoader.Loaders;
 using swengine.desktop.Models;
 using swengine.desktop.Services;
+using Avalonia.Styling;
+using Avalonia;
+using Avalonia.Controls;
 
 namespace swengine.desktop.ViewModels;
 
 public partial class MainWindowViewModel : ObservableObject {
     public IRelayCommand SearchCommand { get; }
     public IRelayCommand RefreshCommand { get; }
+    
     private async void RefreshWallpapers()
     {
         if (SelectedProvider == "Wallpaper Engine")
@@ -33,17 +37,25 @@ public partial class MainWindowViewModel : ObservableObject {
     private static readonly Random _rnd = new();
 
     public MainWindowViewModel() {
+        // Inicializar campos obligatorios antes de usar
+        BgsProvider = null!; // Se inicializará en SetProvider()
+        wallpaperResponses = new List<WallpaperResponse>();
+        
         CurrentPage = _rnd.Next(1, 11); 
         SearchCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(Search);
         RefreshCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(RefreshWallpapers);
       
         SetProvider();
         Search();
-        RequestMoveToTop += RequestMoveToTop;
-        RequestClearImageLoader += RequestClearImageLoader;
+        
+        // Remover estas líneas problemáticas que causaban recursión infinita:
+        // RequestMoveToTop += RequestMoveToTop;
+        // RequestClearImageLoader += RequestClearImageLoader;
     }
 
-    public IBgsProvider BgsProvider;
+    // Inicializar con null-forgiving operator ya que se garantiza la inicialización en SetProvider()
+    public IBgsProvider BgsProvider = null!;
+    
     public string[] Providers => new[] {
         "Motionbgs",
         "Moewalls",
@@ -62,8 +74,10 @@ public partial class MainWindowViewModel : ObservableObject {
 
     private string _selectedProvider = "Moewalls";
     private string _selectedBackend = "SWWW";
-    public event EventHandler<EventArgs> RequestMoveToTop;
-    public event EventHandler<EventArgs> RequestClearImageLoader;
+    
+    // Eventos inicializados correctamente
+    public event EventHandler<EventArgs>? RequestMoveToTop;
+    public event EventHandler<EventArgs>? RequestClearImageLoader;
 
     private CancellationTokenSource _searchDebounceToken = new();
     public AsyncImageLoader.Loaders.BaseWebImageLoader BaseLoader => new BaseWebImageLoader();
@@ -93,12 +107,14 @@ public partial class MainWindowViewModel : ObservableObject {
         Search();
     }
 
-
     [ObservableProperty] private int currentPage = 1;
-    [ObservableProperty] private List<WallpaperResponse> wallpaperResponses;
+    
+    // Inicializar con lista vacía
+    [ObservableProperty] private List<WallpaperResponse> wallpaperResponses = new();
+    
     [ObservableProperty] private bool dataLoading = false;
 
-    [ObservableProperty] private string selectedFile = null;
+    [ObservableProperty] private string? selectedFile = null;
 
     [ObservableProperty]
     private TextDocument customScriptsContent = new() {
@@ -113,7 +129,6 @@ public partial class MainWindowViewModel : ObservableObject {
                 break;
             case "Moewalls":
                 BgsProvider = new MoewallsService();
-
                 break;
             case "Wallhaven":
                 BgsProvider = new WallHavenService();
@@ -141,6 +156,8 @@ public partial class MainWindowViewModel : ObservableObject {
                 await CheckWallpaperEngineDirectory();
                 break;
             default:
+                // Proporcionar un valor por defecto
+                BgsProvider = new MoewallsService();
                 break;
         }
 
@@ -165,7 +182,7 @@ public partial class MainWindowViewModel : ObservableObject {
         }
     }
 
-    private async Task ShowWarningDialog(string message)
+    private static async Task ShowWarningDialog(string message)
     {
         var dialog = new Avalonia.Controls.Window
         {
@@ -182,16 +199,17 @@ public partial class MainWindowViewModel : ObservableObject {
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
             }
         };
-        var mainWindow = (Avalonia.Application.Current.ApplicationLifetime as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+        var mainWindow = (Avalonia.Application.Current!.ApplicationLifetime as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.MainWindow;
         if (mainWindow != null)
             await dialog.ShowDialog(mainWindow);
         else
             dialog.Show();
     }
 
-    private void SetBackend() {
+    private static void SetBackend() {
 
     }
+    
     public void Paginate(string seek) {
         if (seek == "up") {
             CurrentPage++;
@@ -201,16 +219,17 @@ public partial class MainWindowViewModel : ObservableObject {
         _infiniteScrollPage = CurrentPage;
         _appendingToInfinteScroll = false;
         ClearImageLoader();
-        RequestMoveToTop.Invoke(this, EventArgs.Empty);
+        RequestMoveToTop?.Invoke(this, EventArgs.Empty);
         Search();
     }
+    
     public async void Search() {
         await _searchDebounceToken.CancelAsync();
         _searchDebounceToken = new();
         DataLoading = true;
 
         if (_searchDebounceToken.IsCancellationRequested) return;
-        List<WallpaperResponse> results = null;
+        List<WallpaperResponse>? results = null;
         try {
             if (SearchTerm.Length == 0) {
                 if (_searchDebounceToken.IsCancellationRequested) return;
@@ -225,12 +244,14 @@ public partial class MainWindowViewModel : ObservableObject {
             await ShowWarningDialog($"Error inesperado: {ex.Message}");
         }
         ClearImageLoader();
-        WallpaperResponses = results;
+        WallpaperResponses = results ?? new List<WallpaperResponse>();
         DataLoading = false;
     }
+    
     private void ClearImageLoader() {
         RequestClearImageLoader?.Invoke(this, EventArgs.Empty);
     }
+    
     public async void AppendToInfinteScroll() {
         if (_appendingToInfinteScroll) return;
 
@@ -239,8 +260,8 @@ public partial class MainWindowViewModel : ObservableObject {
 
         try {
             var responses = SearchTerm.Length == 0
-                ? await BgsProvider?.LatestAsync(_infiniteScrollPage + 1)
-                : await BgsProvider?.SearchAsync(SearchTerm, _infiniteScrollPage + 1);
+                ? await BgsProvider!.LatestAsync(_infiniteScrollPage + 1)
+                : await BgsProvider!.SearchAsync(SearchTerm, _infiniteScrollPage + 1);
 
             if (responses != null) {
                 foreach (var response in responses) {

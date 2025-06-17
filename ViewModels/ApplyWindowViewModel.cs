@@ -143,7 +143,7 @@ public partial class ApplyWindowViewModel : DialogViewModelBase
             CancellationTokenSource ctx = new();
             applicationStatusDialog.Opened += (sender, args) =>
             {
-                Task.Run(() =>
+                _ = Task.Run(() =>
                 {
                     WallpaperHelper.ApplyWallpaperAsync(
                   wallpaper: Wallpaper,
@@ -153,8 +153,6 @@ public partial class ApplyWindowViewModel : DialogViewModelBase
                    selectedResolution: SelectedResolution,
 
                     selectedFps: SelectedFps,
-
-                   selectedDuration: SelectedDuration,
 
                     bestSettings: BestSettings,
                     backend: Backend,
@@ -238,14 +236,13 @@ public partial class ApplyWindowViewModel : DialogViewModelBase
             CancellationTokenSource ctx = new();
             applicationStatusDialog.Opened += (sender, args) =>
             {
-                Task.Run(() =>
+                _ = Task.Run(() =>
                 {
                     WallpaperHelper.ApplyWallpaperAsync(
                         wallpaper: Wallpaper,
                         applicationStatusWrapper: ApplicationStatusWrapper,
                         selectedResolution: SelectedResolution,
                         selectedFps: SelectedFps,
-                        selectedDuration: SelectedDuration,
                         bestSettings: BestSettings,
                         backend: Backend,
                         token: ctx.Token,

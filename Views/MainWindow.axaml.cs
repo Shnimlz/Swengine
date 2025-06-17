@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text.Json;
 using Avalonia.Controls;
 using Avalonia.Input;
 using System.Linq;
@@ -11,7 +8,6 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using System.Threading.Tasks;
-using Avalonia.Animation;
 using Avalonia.Styling;
 
 namespace swengine.desktop.Views;
@@ -23,16 +19,7 @@ public partial class MainWindow : Window
     
     public MainWindow()
     {
-        // Try InitializeComponent first
-        try 
-        {
-            InitializeComponent();
-        }
-        catch
-        {
-            // If InitializeComponent fails, manually load the AXAML
             AvaloniaXamlLoader.Load(this);
-        }
         
         // Ajustar tamaño y posición al 50% de la pantalla cuando la ventana ya está abierta
         this.Opened += (_, __) =>
@@ -47,16 +34,16 @@ public partial class MainWindow : Window
         
         if (scrollViewer != null)
         {
-            scrollViewer.ScrollChanged += (object sender, ScrollChangedEventArgs args) =>
+            scrollViewer.ScrollChanged += (object? sender, ScrollChangedEventArgs args) =>
             {
                 var scrollview = sender as ScrollViewer;
-                var scrollHeight = (int)scrollview.Extent.Height - scrollview.Viewport.Height;
+                var scrollHeight = (int)scrollview!.Extent.Height - scrollview.Viewport.Height;
                 
                 // > 100 to prevent calling this method when the scrollview is empty
                 if (scrollview.Offset.Y == scrollHeight && scrollHeight > 100)
                 {
                     //append to infinite scroll
-                    (DataContext as MainWindowViewModel).AppendToInfinteScroll();
+                    (DataContext as MainWindowViewModel)?.AppendToInfinteScroll();
                 }
             };
         }
@@ -86,11 +73,12 @@ public partial class MainWindow : Window
         }
     }
 
-    private async void OpenApplyWindow(object? sender, TappedEventArgs e)
+    private async void OpenApplyWindow(object? sender, PointerPressedEventArgs e)
     {
         var dc = (DataContext as MainWindowViewModel);
-        WallpaperResponse Tag = (WallpaperResponse)(sender as StackPanel).Tag;
-        if (Tag == null)
+        // ✅ Cambiar StackPanel por Border
+        WallpaperResponse? tag = (sender as Border)?.Tag as WallpaperResponse;
+        if (tag == null)
         {
             return;
         }
@@ -99,16 +87,15 @@ public partial class MainWindow : Window
         {
             DataContext = new ApplyWindowViewModel()
             {
-                BgsProvider = (DataContext as MainWindowViewModel).BgsProvider,
-                Backend = (DataContext as MainWindowViewModel).SelectedBackend,
-                WallpaperResponse = Tag,
+                BgsProvider = dc!.BgsProvider,
+                Backend = dc!.SelectedBackend,
+                WallpaperResponse = tag,
                 //pass the current provider so the Apply window knows which provider to query for the wallpaper
             }
         };
         
-        var result = await applyWindow.ShowDialog<ApplyWindowViewModel?>(this);
+        _ = await applyWindow.ShowDialog<ApplyWindowViewModel?>(this);
     }
-
     private void OnSearchIconClick(object sender, RoutedEventArgs e)
     {
         ExpandSearch();

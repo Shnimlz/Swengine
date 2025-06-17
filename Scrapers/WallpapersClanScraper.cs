@@ -19,7 +19,7 @@ public static class WallpapersClanScraper
 
         HttpClient client = HttpClientProvider.Client;
 
-        using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, "https://wallpapers-clan.com/wp-admin/admin-ajax.php");
+        using HttpRequestMessage request = new(HttpMethod.Post, "https://wallpapers-clan.com/wp-admin/admin-ajax.php");
 
         request.Headers.Add("User-Agent", "Mozilla/5.0 (iPad; CPU OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Mobile/15E148 Safari/604.1");
         request.Headers.Add("Accept", "*/*");

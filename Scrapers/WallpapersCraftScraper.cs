@@ -28,9 +28,9 @@ public class WallpapersCraftScraper
         List<WallpaperResponse> responses = new();
         foreach (var canvas in wallpaper_canvas)
         {
-            string src = WallpapersCraftBase + canvas.SelectSingleNode(".//a").GetAttributeValue("href", null);
-            string title = canvas.SelectNodes(".//span[@class='wallpapers__info']")[1].InnerText;
-            string thumbnail = canvas.SelectSingleNode(".//img").GetAttributeValue("src", null);
+            string src = WallpapersCraftBase + canvas!.SelectSingleNode(".//a")!.GetAttributeValue("href", null);
+            string title = canvas!.SelectNodes(".//span[@class='wallpapers__info']")[1]!.InnerText;
+            string thumbnail = canvas!.SelectSingleNode(".//img")!.GetAttributeValue("src", null);
             responses.Add(new()
             {
                 Title = title,

@@ -14,4 +14,10 @@
         <StyleInclude Source="avares://AsyncImageLoader.Avalonia/AdvancedImage.axaml" />
         <sty:FluentAvaloniaTheme />
     </Application.Styles>
+
+     <Application.Resources>
+        <FontFamily x:Key="NunitoFont">avares://Swengine/Assets/Fonts#Nunito</FontFamily>
+        <FontFamily x:Key="WarixFont">avares://Swengine/Assets/Fonts#Warix</FontFamily>
+        <FontFamily x:Key="NexaTextFont">avares://Swengine/Assets/Fonts#Nexa</FontFamily>
+    </Application.Resources>
 </Application>

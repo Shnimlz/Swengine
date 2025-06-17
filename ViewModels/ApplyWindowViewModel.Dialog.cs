@@ -60,26 +60,11 @@ public partial class ApplyWindowViewModel{
             Source = this,
             Mode = BindingMode.TwoWay
         });
-        TextBlock DurationSelectorText = new() { Text = "Select duration" };
-        TextBox DurationSelector = new();
-        DurationSelector.Bind(TextBox.TextProperty, new Binding()
-        {
-            Path = "SelectedDuration",
-            Source=this,
-            Mode = BindingMode.TwoWay
-        });
-        ToolTip.SetTip(DurationSelector,new TextBlock()
-        {
-            Text = "5 seconds is usually sufficient for wallpapers. Longer wallpapers would be larger in size and take longer to apply"
-        });
         UserSelectedContent.Children.Add(ResolutionSelectorText);
         UserSelectedContent.Children.Add(ResolutionSelector);
         
         UserSelectedContent.Children.Add(FpsSelectorText);
         UserSelectedContent.Children.Add(FpsSelector);
-        
-        UserSelectedContent.Children.Add(DurationSelectorText);
-        UserSelectedContent.Children.Add(DurationSelector);
 
         panel.Children.Add(BestSettingsText);
         panel.Children.Add(BestSettingsCheckBox);

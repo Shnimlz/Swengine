@@ -16,7 +16,6 @@ public static class WallpaperHelper
      ApplicationStatusWrapper applicationStatusWrapper,
     GifQuality selectedResolution,
      string selectedFps, 
-    int selectedDuration,
     bool bestSettings, 
     string backend,
     CancellationToken token, 
@@ -53,8 +52,8 @@ public static class WallpaperHelper
         *       Download complete begin conversion
         */
 
-           //very dangerous with the int.Parse(). Must refine this
-        string convertResult =  await FfmpegHelper.ConvertAsync(downloadResult, 0, selectedDuration,selectedResolution,fps:int.Parse(selectedFps),bestSettings);
+        //very dangerous with the int.Parse(). Must refine this
+        string convertResult = await FfmpegHelper.ConvertAsync(downloadResult, 0, 5, selectedResolution, fps: int.Parse(selectedFps), bestSettings: bestSettings);
         //if conversion failed, return and notify user
         if(convertResult == null){
              Dispatcher.UIThread.Post(() =>

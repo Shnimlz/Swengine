@@ -12,17 +12,22 @@ public static class FfmpegHelper
     /*
     *ConvertAsync will return the location of the converted file if successful, or null if unsuccesful
     **/
-    public async static Task<string> ConvertAsync(string file, double startAt = 0, double endAt = 5, GifQuality quality = GifQuality.q1080p, int fps = 60, bool bestSettings= false )
+    public async static Task<string?> ConvertAsync(string file, double startAt = 0, double endAt = 5, GifQuality quality = GifQuality.q1080p, int fps = 60, bool bestSettings = false)
     {
         try
         {
-              string home = Environment.GetEnvironmentVariable("HOME");
+            // Force garbage collection before heavy processing
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
+            string home = Environment.GetEnvironmentVariable("HOME");
 
             //if file is not a video, dont bother converting. Just return the image.
-            if(Path.GetExtension(file).ToLower() != ".mp4" && Path.GetExtension(file).ToLower() != ".mkv"){
+            if (Path.GetExtension(file).ToLower() != ".mp4" && Path.GetExtension(file).ToLower() != ".mkv")
+            {
                 string copyTo = home + "/Pictures/wallpapers/" + file.Split("/").Last();
-                File.Copy(file,copyTo,true);
-                if(!File.Exists(copyTo))
+                File.Copy(file, copyTo, true);
+                if (!File.Exists(copyTo))
                     return null;
                 File.Delete(file);
                 return copyTo;
@@ -33,121 +38,209 @@ public static class FfmpegHelper
             string tmpFirstFrame = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + "_first.jpg");
             string tmpLoopedVideo = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + "_looped.mp4");
 
-            // 1. Extrae el primer frame
-            var extractFrame = new Process {
-                StartInfo = new() {
-                    FileName = "ffmpeg",
-                    Arguments = $"-y -i \"{file}\" -vf \"select=eq(n\\,0)\" -q:v 3 \"{tmpFirstFrame}\"",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                }
-            };
-            extractFrame.Start();
-            extractFrame.WaitForExit();
-
-            // 2. Añade el primer frame al final del video
-            var concatVideo = new Process {
-                StartInfo = new() {
-                    FileName = "ffmpeg",
-                    Arguments = $"-y -i \"{file}\" -i \"{tmpFirstFrame}\" -filter_complex \"[0:v][1:v]concat=n=2:v=1:a=0\" -c:v libx264 -preset veryfast \"{tmpLoopedVideo}\"",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                }
-            };
-            concatVideo.Start();
-            concatVideo.WaitForExit();
-
-            // 3. Ahora convierte el video extendido a GIF
-            string ffmpegArgs = bestSettings
-                ? $"-i \"{tmpLoopedVideo}\" -y \"{convertTo}\""
-                : $"-ss {startAt} -t {endAt} -i \"{tmpLoopedVideo}\" -vf \"scale=-1:{QualityParser(quality)}:flags=lanczos,fps={fps}\" -loop 0 -y \"{convertTo}\"";
-
-            var convertProcess = new Process
+            try
             {
-                StartInfo = new()
+                // 1. Extrae el primer frame - OPTIMIZED with memory constraints
+                var extractFrame = new Process
                 {
-                    FileName = "ffmpeg",
-                    Arguments = ffmpegArgs,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
+                    StartInfo = new()
+                    {
+                        FileName = "ffmpeg",
+                        Arguments = $"-y -threads 1 -hwaccel none -i \"{file}\" -vf \"select=eq(n\\,0)\" -q:v 3 \"{tmpFirstFrame}\"",
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    }
+                };
+                
+                await RunProcessWithTimeoutAsync(extractFrame, TimeSpan.FromMinutes(2));
+
+                if (!File.Exists(tmpFirstFrame))
+                {
+                    return null;
                 }
-            };
 
-            // Limpia temporales después
+                // 2. Añade el primer frame al final del video - OPTIMIZED
+                var concatVideo = new Process
+                {
+                    StartInfo = new()
+                    {
+                        FileName = "ffmpeg",
+                        Arguments = $"-y -threads 2 -hwaccel none -i \"{file}\" -i \"{tmpFirstFrame}\" -filter_complex \"[0:v][1:v]concat=n=2:v=1:a=0\" -c:v libx264 -preset veryfast -crf 23 \"{tmpLoopedVideo}\"",
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    }
+                };
 
-            // convertProcess.OutputDataReceived += (sender, args) =>
-            // {
-            //         Debug.WriteLine($"Received Output: {args.Data}");
-            // };
-            // convertProcess.ErrorDataReceived += (sender, errorArgs) =>
-            // {
-            //     if (errorArgs.Data != null)
-            //     {
-            //         Debug.WriteLine($"Received Error: {errorArgs.Data}");
-            //     }
-            // };
-            convertProcess.Start();
-            convertProcess.BeginOutputReadLine();
-            convertProcess.BeginErrorReadLine();
-            convertProcess.WaitForExit();
-            //if gif does not exist then conversion failed. Return false
-            if (!File.Exists(convertTo))
-            {
-                return null;
+                await RunProcessWithTimeoutAsync(concatVideo, TimeSpan.FromMinutes(5));
+
+                if (!File.Exists(tmpLoopedVideo))
+                {
+                    return null;
+                }
+
+                // 3. Crear paleta de colores optimizada para wallpaper
+                string tmpPalette = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + "_palette.png");
+                
+                var paletteProcess = new Process
+                {
+                    StartInfo = new()
+                    {
+                        FileName = "ffmpeg",
+                        Arguments = bestSettings
+                            ? $"-threads 2 -hwaccel none -i \"{tmpLoopedVideo}\" -vf \"palettegen=reserve_transparent=0:max_colors=256:stats_mode=diff\" -y \"{tmpPalette}\""
+                            : $"-threads 2 -hwaccel none -ss {startAt} -t {endAt} -i \"{tmpLoopedVideo}\" -vf \"scale=-1:{QualityParser(quality)}:flags=lanczos,fps={Math.Min(fps, 24)},palettegen=reserve_transparent=0:max_colors=256:stats_mode=diff\" -y \"{tmpPalette}\"",
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    }
+                };
+
+                await RunProcessWithTimeoutAsync(paletteProcess, TimeSpan.FromMinutes(3));
+
+                if (!File.Exists(tmpPalette))
+                {
+                    return null;
+                }
+
+                // 4. Convertir a GIF usando la paleta optimizada para calidad de wallpaper
+                string gifArgs = bestSettings
+                    ? $"-threads 2 -hwaccel none -i \"{tmpLoopedVideo}\" -i \"{tmpPalette}\" -lavfi \"[0:v][1:v]paletteuse=dither=sierra2_4a:diff_mode=rectangle:alpha_threshold=128\" -loop 0 -y \"{convertTo}\""
+                    : $"-threads 2 -hwaccel none -ss {startAt} -t {endAt} -i \"{tmpLoopedVideo}\" -i \"{tmpPalette}\" -lavfi \"scale=-1:{QualityParser(quality)}:flags=lanczos,fps={Math.Min(fps, 24)}[scaled];[scaled][1:v]paletteuse=dither=sierra2_4a:diff_mode=rectangle:alpha_threshold=128\" -loop 0 -y \"{convertTo}\"";
+
+                var convertProcess = new Process
+                {
+                    StartInfo = new()
+                    {
+                        FileName = "ffmpeg",
+                        Arguments = gifArgs,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    }
+                };
+
+                await RunProcessWithTimeoutAsync(convertProcess, TimeSpan.FromMinutes(10));
+
+                //if gif does not exist then conversion failed. Return false
+                if (!File.Exists(convertTo))
+                {
+                    return null;
+                }
+
+                //if everything went smoothly, delete the mp4.
+                File.Delete(file);
+                return convertTo;
             }
-            //if everything went smoothly, delete the mp4.
-           File.Delete(file);
-            return convertTo;
+            finally
+            {
+                // Clean up temporary files including palette
+                CleanupTempFiles(tmpFirstFrame, tmpLoopedVideo, Path.Combine(Path.GetTempPath(), "*_palette.png"));
+            }
         }
-        catch
+        catch (Exception ex)
         {
+            Debug.WriteLine($"Error in ConvertAsync: {ex.Message}");
             return null;
         }
-      
+    }
+
+    private static async Task RunProcessWithTimeoutAsync(Process process, TimeSpan timeout)
+    {
+        process.Start();
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+        
+        // Wait for process with timeout
+        var completedWithinTimeout = process.WaitForExit((int)timeout.TotalMilliseconds);
+        
+        if (!completedWithinTimeout)
+        {
+            try
+            {
+                process.Kill();
+                Debug.WriteLine("Process killed due to timeout");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error killing process: {ex.Message}");
+            }
+        }
+        
+        // Small delay to ensure cleanup
+        await Task.Delay(100);
+    }
+
+    private static void CleanupTempFiles(params string[] patterns)
+    {
+        foreach (var pattern in patterns)
+        {
+            try
+            {
+                if (pattern.Contains("*"))
+                {
+                    // Handle wildcard patterns
+                    var directory = Path.GetDirectoryName(pattern);
+                    var fileName = Path.GetFileName(pattern);
+                    if (Directory.Exists(directory))
+                    {
+                        var files = Directory.GetFiles(directory, fileName);
+                        foreach (var file in files)
+                        {
+                            File.Delete(file);
+                        }
+                    }
+                }
+                else if (File.Exists(pattern))
+                {
+                    File.Delete(pattern);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to delete temp file {pattern}: {ex.Message}");
+            }
+        }
     }
 
     private static string QualityParser(GifQuality quality)
     {
-        switch (quality)
+        return quality switch
         {
-            case GifQuality.q360p:
-                return "360";
-                break;
-            case GifQuality.q480p:
-                return "480";
-                break;
-            case GifQuality.q720p:
-                return "720";
-                break;
-            case GifQuality.q1080p:
-                return "1080";
-                break;
-            case GifQuality.q1440p:
-                return "1440";
-                break;
-            case GifQuality.q2160p:
-                return "2160";
-                break;
-            default:
-                return "1080";
-                break;
-        }
+            GifQuality.q360p => "360",
+            GifQuality.q480p => "480",
+            GifQuality.q720p => "720",
+            GifQuality.q1080p => "1080",
+            GifQuality.q1440p => "1440",
+            GifQuality.q2160p => "2160",
+            _ => "1080",
+        };
     }
 
-    // Method to convert extracted scene resources to mp4
-    public static async Task<string> ConvertSceneToMp4Async(string sceneDirectory, string outputFile)
+    // Method to convert extracted scene resources to mp4 - OPTIMIZED
+    public static async Task<string?> ConvertSceneToMp4Async(string sceneDirectory, string outputFile)
     {
         try
         {
-            // Assuming all video resources are extracted to the sceneDirectory
-            // Use FFmpeg to combine these resources into a single mp4 file
-            string ffmpegArgs = $"-framerate 30 -pattern_type glob -i '{sceneDirectory}/*.png' -c:v libx264 -pix_fmt yuv420p -y {outputFile}";
+            // Force garbage collection before processing
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
+            // Check if directory has images
+            var imageFiles = Directory.GetFiles(sceneDirectory, "*.png");
+            if (imageFiles.Length == 0)
+            {
+                Debug.WriteLine("No PNG files found in scene directory");
+                return null;
+            }
+
+            // Use memory-optimized settings for image sequence conversion
+            string ffmpegArgs = $"-threads 2 -hwaccel none -framerate 30 -pattern_type glob -i '{sceneDirectory}/*.png' -c:v libx264 -preset fast -crf 23 -pix_fmt yuv420p -movflags +faststart -y \"{outputFile}\"";
 
             var convertProcess = new Process
             {
@@ -162,21 +255,20 @@ public static class FfmpegHelper
                 }
             };
 
-            convertProcess.Start();
-            convertProcess.BeginOutputReadLine();
-            convertProcess.BeginErrorReadLine();
-            convertProcess.WaitForExit();
+            await RunProcessWithTimeoutAsync(convertProcess, TimeSpan.FromMinutes(5));
 
             if (!File.Exists(outputFile))
             {
-                return null; // Conversion failed
+                Debug.WriteLine("Output file was not created");
+                return null;
             }
 
-            return outputFile; // Return the path to the converted mp4
+            return outputFile;
         }
-        catch
+        catch (Exception ex)
         {
-            return null; // Handle any exceptions
+            Debug.WriteLine($"Error in ConvertSceneToMp4Async: {ex.Message}");
+            return null;
         }
     }
 }

@@ -1,18 +1,11 @@
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
-using System.Text.Json;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data;
 using Avalonia.Platform.Storage;
 using AvaloniaEdit;
-using AvaloniaEdit.Document;
-using CommunityToolkit.Mvvm.ComponentModel;
 using FluentAvalonia.UI.Controls;
-using swengine.desktop.Models;
 using swengine.desktop.Services;
 using swengine.desktop.Views;
 using swengine.desktop.Helpers;
@@ -50,7 +43,7 @@ public partial class MainWindowViewModel{
          };
 
          // Obtén la ventana principal como owner
-         var mainWindow = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+         var mainWindow = (Application.Current!.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
          if (mainWindow != null)
          {
              await applyWindow.ShowDialog(mainWindow);
@@ -59,7 +52,7 @@ public partial class MainWindowViewModel{
         }
     }
 }
-   private object UploadDialogContent(){
+   private StackPanel UploadDialogContent(){
         StackPanel panel = new();
         Button uploadFile = new(){
             Content = "Upload File"
@@ -71,34 +64,41 @@ public partial class MainWindowViewModel{
             Mode = BindingMode.TwoWay
         });
         uploadFile.Click += (s,e)=>{
-            handleFileDialog();
+            HandleFileDialog();
         };
         panel.Children.Add(uploadFile);
         panel.Children.Add(selectedFile);
         return panel;
     }
-    private object CustomScriptsDialogContent(){
-         TextBlock customScriptText = new(){
-            Text = "Enter commands you want to run after a new wallpaper has been set. One command per line. Substitute \"$1\" for the full path of the newely set wallpaper. TAKE GREAT CAUTION HERE",
-            TextWrapping = Avalonia.Media.TextWrapping.Wrap
-        };
-          TextEditor customScriptBox = new(){
-           WordWrap = true,
-           ShowLineNumbers = true,  
-           Height = 100,
-          Document = new() {Text = "A sample text"}
-        };
-        customScriptBox.Bind(TextEditor.DocumentProperty, new Binding(){
-             Source = this,
-             Path = "CustomScriptsContent",
-             Mode = BindingMode.TwoWay
-        });
-        StackPanel wrapper = new();
-        wrapper.Children.Add(customScriptText);
-        wrapper.Children.Add(customScriptBox);
-
-        return wrapper;
-    }
+   private StackPanel CustomScriptsDialogContent()
+        {
+            TextBlock customScriptText = new()
+            {
+                Text = "Enter commands you want to run after a new wallpaper has been set. One command per line. Substitute \"$1\" for the full path of the newly set wallpaper. TAKE GREAT CAUTION HERE",
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap
+            };
+            
+            TextEditor customScriptBox = new()
+            {
+                WordWrap = true,
+                ShowLineNumbers = true,
+                Height = 100,
+                Document = new() { Text = "A sample text" }
+            };
+            
+            customScriptBox.Bind(TextEditor.DocumentProperty, new Binding()
+            {
+                Source = this,
+                Path = "CustomScriptsContent",
+                Mode = BindingMode.TwoWay
+            });
+            
+            StackPanel wrapper = new();
+            wrapper.Children.Add(customScriptText);
+            wrapper.Children.Add(customScriptBox);
+            
+            return wrapper; // Ahora retorna StackPanel específicamente
+        }
     public async void OpenCustomScriptsDialog(){
         var readonly_custom_script_content = CustomScriptsHelper.ScriptsFileContent;
         if(readonly_custom_script_content == null)
@@ -119,11 +119,11 @@ public partial class MainWindowViewModel{
         }
     }
 
-    private async void handleFileDialog(){
-        var toplevel = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow;
+    private async void HandleFileDialog(){
+        var toplevel = (Application.Current!.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow;
 
         // Start async operation to open the dialog.
-        var files = await toplevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        var files = await toplevel!.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
             Title = "Open Text File",
             AllowMultiple = false,
