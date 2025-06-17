@@ -1,7 +1,7 @@
 #Maintainer: Shnimlz <shnimlz@proton.me>
 #Author Original: Noble Eugene <nobleeugene2005@gmail.com>
 pkgname="swengine-revanced"
-pkgver="0.9"
+pkgver="2.0.1"
 pkgrel=1
 pkgdesc="Download or upload your wallpapers or use the ones downloaded from wallpaper engine with Sww"
 arch=("x86_64")
@@ -9,7 +9,7 @@ depends=("vlc" "ffmpeg" "swww")
 makedepends=("dotnet-sdk" "git")
 url="https://github.com/Shnimlz/Swengine"
 source=("swengine.desktop")
-md5sums=("6dca3a767dd3c85369aaad5affae54d4")
+md5sums=("0cca1884db3254ff31059a181400e09b")
 
 prepare(){
     rm -rf swengine
@@ -24,5 +24,6 @@ package(){
     chmod +x ./swengine
     install -d -m 755 "$pkgdir/usr/bin" && cp swengine "$pkgdir/usr/bin"
     install -d -m 755 "$pkgdir/usr/lib/swengine" && cp -r dist/* "$pkgdir/usr/lib/swengine"
+    install -Dm644 "$srcdir/swengine/Assets/icon.png" "$pkgdir/usr/share/icons/hicolor/128x128/apps/swengine.png"
     install -Dm644 "$srcdir/swengine.desktop" "$pkgdir/usr/share/applications/swengine.desktop"    
 }
