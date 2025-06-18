@@ -9,6 +9,8 @@ using FluentAvalonia.UI.Controls;
 using swengine.desktop.Services;
 using swengine.desktop.Views;
 using swengine.desktop.Helpers;
+using Avalonia.Layout;
+using DynamicData;
 namespace swengine.desktop.ViewModels;
 public partial class MainWindowViewModel{
    public async void OpenUploadDialog()
@@ -42,13 +44,11 @@ public partial class MainWindowViewModel{
              }
          };
 
-         // Obtén la ventana principal como owner
          var mainWindow = (Application.Current!.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
          if (mainWindow != null)
          {
              await applyWindow.ShowDialog(mainWindow);
          }
-         // Si mainWindow es null, simplemente no mostramos la ventana para evitar error de compilación.
         }
     }
 }
@@ -104,16 +104,18 @@ public partial class MainWindowViewModel{
              Path = "CustomScriptsContent",
              Mode = BindingMode.TwoWay
         });
-        StackPanel wrapper = new();
+        StackPanel wrapper = new() {
+            MaxHeight = 420,
+            MaxWidth = 620
+        };
         wrapper.Children.Add(customScriptText);
         wrapper.Children.Add(customScriptBox);
-
         return wrapper;
     }
     public async void OpenCustomScriptsDialog(){
         var readonly_custom_script_content = CustomScriptsHelper.ScriptsFileContent;
         if(readonly_custom_script_content == null)
-            CustomScriptsContent.Text = "echo $wallpaper";
+            CustomScriptsContent.Text = "$1 # means the first paramter fed to the script which in this case will always be the full rooted path of the newely applied wallpaper.";
         else
             CustomScriptsContent.Text = readonly_custom_script_content;
         
@@ -123,12 +125,18 @@ public partial class MainWindowViewModel{
                 PrimaryButtonText = "Add Script",
                 Content = CustomScriptsDialogContent()
         };
-        var dialogResponse = await dialog.ShowAsync();
+        var mainWindow = (Application.Current!.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+    ContentDialogResult dialogResponse;
+    if (mainWindow != null)
+        dialogResponse = await dialog.ShowAsync(mainWindow);
+    else
+        dialogResponse = await dialog.ShowAsync();
         if(dialogResponse ==  ContentDialogResult.Primary){
-            // Al pulsar "Add Script", abre la ventana de edición
-            var mainWindow = (Application.Current!.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
             var scriptEditor = new swengine.desktop.Views.ScriptEditorWindow(CustomScriptsContent.Text);
             scriptEditor.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            scriptEditor.Width = 620;
+            scriptEditor.Height = 315;
+            scriptEditor.BorderBrush = null;
             var result = await scriptEditor.ShowDialog<bool?>(mainWindow);
             if (result == true && !string.IsNullOrWhiteSpace(scriptEditor.ScriptContent))
             {
