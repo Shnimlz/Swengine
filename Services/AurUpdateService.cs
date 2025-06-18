@@ -10,7 +10,7 @@ namespace swengine.desktop.Services;
 public static class AurUpdateService {
     public static async Task<string?> GetInstalledVersionAsync(string packageName) {
         var process = new Process();
-        process.StartInfo.FileName = "pacman";
+        process.StartInfo.FileName = "yay";
         process.StartInfo.Arguments = $"-Qi {packageName}";
         process.StartInfo.RedirectStandardOutput = true;
         process.StartInfo.UseShellExecute = false;
@@ -21,17 +21,21 @@ public static class AurUpdateService {
         return match.Success ? match.Groups[1].Value : null;
     }
 
-    public static async Task<string?> GetAurVersionAsync(string packageName) {
-        using var client = new HttpClient();
-        var url = $"https://aur.archlinux.org/rpc/?v=5&type=info&arg={packageName}";
-        var response = await client.GetStringAsync(url);
-        using var json = JsonDocument.Parse(response);
-        var results = json.RootElement.GetProperty("results");
-        if (results.ValueKind == JsonValueKind.Object && results.TryGetProperty("Version", out var versionProp))
-            return versionProp.GetString();
-        return null;
-    }
-
+        public static async Task<string?> GetAurVersionAsync(string packageName) {
+            using var client = new HttpClient();
+            var url = $"https://aur.archlinux.org/rpc/?v=5&type=info&arg={packageName}";
+            var response = await client.GetStringAsync(url);
+            using var json = JsonDocument.Parse(response);
+            var results = json.RootElement.GetProperty("results");
+            if (results.ValueKind == JsonValueKind.Array && results.GetArrayLength() > 0)
+            {
+                var firstResult = results[0];
+                if (firstResult.TryGetProperty("Version", out var versionProp))
+                    return versionProp.GetString();
+            }
+            return null;
+        }
+        
     public static async Task<bool> IsUpdateAvailableAsync(string packageName) {
         var installed = await GetInstalledVersionAsync(packageName);
         var aur = await GetAurVersionAsync(packageName);
@@ -40,9 +44,13 @@ public static class AurUpdateService {
     }
 
     public static void LaunchUpdate(string packageName) {
-        var process = new Process();
-        process.StartInfo.FileName = "x-terminal-emulator"; // Cambia a tu terminal preferido si es necesario
-        process.StartInfo.Arguments = $"-e 'yay -Syu {packageName}'";
-        process.Start();
+        try {
+            var process = new Process();
+            process.StartInfo.FileName = "bash";
+            process.StartInfo.Arguments = $"-c \"yay -Syu {packageName}\"";
+            process.Start();
+        } catch (Exception ex) {
+            Console.WriteLine($"Error al lanzar la actualización: {ex.Message}");
+        }
     }
 }

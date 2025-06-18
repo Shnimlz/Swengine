@@ -15,11 +15,12 @@ using swengine.desktop.Services;
 using Avalonia.Styling;
 using Avalonia;
 using Avalonia.Controls;
+using System.Diagnostics;
 
 namespace swengine.desktop.ViewModels;
 
 public partial class MainWindowViewModel : ObservableObject {
-    private const string AurPackageName = "swengine-revanced"; // Cambiado al nombre real en el AUR
+    private const string AurPackageName = "swengine-revanced"; 
     public bool UpdateAvailable { get; private set; } = false;
     public string? LatestAurVersion { get; private set; }
     public IRelayCommand UpdateCommand { get; }
@@ -44,10 +45,10 @@ public partial class MainWindowViewModel : ObservableObject {
 
     public MainWindowViewModel() {
         UpdateCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(LaunchAurUpdate);
-        CheckForAurUpdate();
-        UpdateCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(LaunchAurUpdate);
-        CheckForAurUpdate();
-
+        _ = CheckForAurUpdateAsync(); 
+        Console.WriteLine($"{UpdateCommand}");
+        Console.WriteLine($"{UpdateAvailable}");
+        Console.WriteLine($"{LatestAurVersion}");
         // Inicializar campos obligatorios antes de usar
         BgsProvider = null!; // Se inicializará en SetProvider()
         wallpaperResponses = new ObservableCollection<WallpaperResponse>();
@@ -59,32 +60,22 @@ public partial class MainWindowViewModel : ObservableObject {
         SetProvider();
         Search();
         
-        // Remover estas líneas problemáticas que causaban recursión infinita:
-        // RequestMoveToTop += RequestMoveToTop;
-        // RequestClearImageLoader += RequestClearImageLoader;
     }
 
-    private async void CheckForAurUpdate()
+    private async Task CheckForAurUpdateAsync()
     {
-        try
-        {
-            UpdateAvailable = await swengine.desktop.Services.AurUpdateService.IsUpdateAvailableAsync(AurPackageName);
-            if (UpdateAvailable)
-            {
-                LatestAurVersion = await swengine.desktop.Services.AurUpdateService.GetAurVersionAsync(AurPackageName);
-                await ShowWarningDialog($"¡Nueva versión disponible en AUR! Versión: {LatestAurVersion}\n¿Quieres actualizar ahora?\n\nPuedes hacerlo desde el menú de la app o ejecutando yay -Syu {AurPackageName}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[AUR UPDATE] Error: {ex.Message}");
-        }
+        LatestAurVersion = await AurUpdateService.GetAurVersionAsync(AurPackageName);
+        UpdateAvailable = await AurUpdateService.IsUpdateAvailableAsync(AurPackageName);
+        OnPropertyChanged(nameof(UpdateAvailable));
+        OnPropertyChanged(nameof(LatestAurVersion));
+        Console.WriteLine($"LatestAurVersion (async): {LatestAurVersion}");
+        Console.WriteLine($"UpdateAvailable (async): {UpdateAvailable}");
     }
 
     private void LaunchAurUpdate()
     {
         swengine.desktop.Services.AurUpdateService.LaunchUpdate(AurPackageName);
-      (Avalonia.Application.Current.ApplicationLifetime as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.Shutdown();
+      (Application.Current!.ApplicationLifetime as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.Shutdown();
     }
 
 
