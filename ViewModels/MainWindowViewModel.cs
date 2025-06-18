@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading;
 using AvaloniaEdit.Document;
@@ -39,7 +40,7 @@ public partial class MainWindowViewModel : ObservableObject {
     public MainWindowViewModel() {
         // Inicializar campos obligatorios antes de usar
         BgsProvider = null!; // Se inicializará en SetProvider()
-        wallpaperResponses = new List<WallpaperResponse>();
+        wallpaperResponses = new ObservableCollection<WallpaperResponse>();
         
         CurrentPage = _rnd.Next(1, 11); 
         SearchCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(Search);
@@ -72,7 +73,7 @@ public partial class MainWindowViewModel : ObservableObject {
     public string[] Backends => new[] { "SWWW", "PLASMA", "GNOME" };
     private bool _appendingToInfinteScroll = false;
 
-    private string _selectedProvider = "Moewalls";
+    private string _selectedProvider = "Motionbgs";
     private string _selectedBackend = "SWWW";
     
     // Eventos inicializados correctamente
@@ -110,7 +111,7 @@ public partial class MainWindowViewModel : ObservableObject {
     [ObservableProperty] private int currentPage = 1;
     
     // Inicializar con lista vacía
-    [ObservableProperty] private List<WallpaperResponse> wallpaperResponses = new();
+    [ObservableProperty] private ObservableCollection<WallpaperResponse> wallpaperResponses = new();
     
     [ObservableProperty] private bool dataLoading = false;
 
@@ -223,10 +224,20 @@ public partial class MainWindowViewModel : ObservableObject {
         Search();
     }
     
+    // Mejora: solo procesa la última búsqueda activa y evita términos muy cortos
+    private int _searchRequestId = 0;
     public async void Search() {
         await _searchDebounceToken.CancelAsync();
         _searchDebounceToken = new();
+        int currentRequestId = ++_searchRequestId;
         DataLoading = true;
+
+        // Evita búsquedas con términos muy cortos (menos de 3 letras)
+        if (!string.IsNullOrWhiteSpace(SearchTerm) && SearchTerm.Length < 3) {
+            WallpaperResponses.Clear();
+            DataLoading = false;
+            return;
+        }
 
         if (_searchDebounceToken.IsCancellationRequested) return;
         List<WallpaperResponse>? results = null;
@@ -243,9 +254,26 @@ public partial class MainWindowViewModel : ObservableObject {
         } catch (Exception ex) {
             await ShowWarningDialog($"Error inesperado: {ex.Message}");
         }
-        ClearImageLoader();
-        WallpaperResponses = results ?? new List<WallpaperResponse>();
-        DataLoading = false;
+        // Solo actualiza si sigue siendo la última búsqueda
+        if (currentRequestId == _searchRequestId) {
+            ClearImageLoader();
+            WallpaperResponses.Clear();
+if (results != null)
+{
+    foreach (var wp in results)
+        WallpaperResponses.Add(wp);
+}
+
+            // Log temporal para depuración: muestra los thumbnails en consola
+            if (WallpaperResponses != null && WallpaperResponses.Count > 0)
+            {
+                foreach (var wp in WallpaperResponses)
+                {
+                    Console.WriteLine($"[DEBUG] Thumbnail: {wp.Thumbnail}");
+                }
+            }
+            DataLoading = false;
+        }
     }
     
     private void ClearImageLoader() {

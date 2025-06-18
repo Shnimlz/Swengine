@@ -39,7 +39,17 @@ public static class DesktopHutScraper
         {
             var title = item.SelectSingleNode(".//h2").InnerHtml;
             var src = _base + item.SelectSingleNode(".//a").GetAttributeValue("href", "").TrimStart('/');
-            var thumbnail = item.SelectSingleNode(".//img").GetAttributeValue("data-src", "");
+            var imgNode = item.SelectSingleNode(".//img");
+            string thumbnail = "";
+            if (imgNode != null)
+            {
+                thumbnail = imgNode.GetAttributeValue("data-src", "");
+                if (string.IsNullOrWhiteSpace(thumbnail))
+                    thumbnail = imgNode.GetAttributeValue("src", "");
+                // Si el thumbnail es relativo, hazlo absoluto
+                if (!string.IsNullOrWhiteSpace(thumbnail) && thumbnail.StartsWith('/'))
+                    thumbnail = _base.TrimEnd('/') + thumbnail;
+            }
             responses.Add(new()
             {
                 Title = title,

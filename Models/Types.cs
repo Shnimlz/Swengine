@@ -20,7 +20,12 @@ public class WallpaperResponse
      */
     public string? Src { get; set; }
 
+    /// <summary>
+    /// Resolution string, e.g. "1920x1080" or null if not available
+    /// </summary>
+    public string? Resolution { get; set; }
 }
+
 public class Wallpaper
 {
     /**

@@ -11,11 +11,14 @@ Ventana principal de la aplicación Swengine con animaciones corregidas usando p
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         WindowStartupLocation="CenterScreen"
-        xmlns:local="using:swengine.desktop" 
+        xmlns:local="clr-namespace:swengine.desktop.Views" 
         xmlns:models="using:swengine.desktop.Models"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Title="swengine.desktop">
+    <Window.Resources>
+        <local:StringNullOrEmptyToBoolConverter x:Key="StringNullOrEmptyToBoolConverter" />
+    </Window.Resources>
     <Window.Background>
         <SolidColorBrush Color="#19192c"/>
     </Window.Background>
@@ -262,20 +265,29 @@ Ventana principal de la aplicación Swengine con animaciones corregidas usando p
                             </Border.Styles>
 
                             <!-- Contenedor de imagen con bordes redondeados que ocupa toda la card -->
-                            <Border CornerRadius="8" 
+                            <Border
                                     ClipToBounds="True"
-                                    Height="285">
-                                
-                                <!-- Grid para contener múltiples elementos superpuestos -->
+                                    Height="285"
+                                    CornerRadius="6">
                                 <Grid>
-                                    <!-- Imagen principal -->
-                                    <asyncImageLoader:AdvancedImage 
-                                        Source="{Binding Thumbnail, FallbackValue=/Assets/placeholder.png}" 
-                                        Loader="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).BaseLoader}" 
-                                        Stretch="UniformToFill"
-                                        VerticalAlignment="Center" 
-                                        HorizontalAlignment="Center"
-                                        IsHitTestVisible="False"/>
+    <asyncImageLoader:AdvancedImage
+        Source="{Binding Thumbnail, FallbackValue=/Assets/placeholder.png}"
+        Stretch="UniformToFill"
+        VerticalAlignment="Center"
+        HorizontalAlignment="Center"
+        IsHitTestVisible="False"/>
+                                    <!-- Resolución encima del thumbnail -->
+                                    <TextBlock Text="{Binding Resolution}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Top"
+                                           Margin="0,10,0,0"
+                                           FontSize="15"
+                                           FontWeight="Bold"
+                                           Foreground="White"
+                                           Background="#66000000"
+                                           Padding="8,2"
+                                           IsVisible="{Binding Resolution, Converter={StaticResource StringNullOrEmptyToBoolConverter}}"
+                                           />
                                     
                                     <!-- Overlay gradient para mejor legibilidad del texto -->
                                     <Border IsHitTestVisible="False">

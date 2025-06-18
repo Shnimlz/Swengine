@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
@@ -23,19 +24,46 @@ public static class MoewallsScraper {
             HtmlDocument htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(response);
             var g1_collection_item = htmlDoc.DocumentNode.SelectNodes("//li[contains(@class,'g1-collection-item')]");
-            foreach (var item in g1_collection_item) {
-                try {
-
-                    string img_src = item.SelectSingleNode(".//img").GetAttributeValue("src", null);
-                    string title = item.SelectSingleNode(".//a[@class='g1-frame']").GetAttributeValue("title", null);
-                    string src = item.SelectSingleNode(".//a[@class='g1-frame']").GetAttributeValue("href", null);
-                    wallpaper_responses.Add(new() {
-                        Title = title,
-                        Src = src,
-                        Thumbnail = img_src
-                    });
-                } catch { }
-
+            if (g1_collection_item != null)
+            {
+                foreach (var item in g1_collection_item)
+                {
+                    try
+                    {
+                        var imgNode = item.SelectSingleNode(".//img");
+                        var aNode = item.SelectSingleNode(".//a[@class='g1-frame']");
+                        string img_src = imgNode?.GetAttributeValue("src", null);
+                        string title = aNode?.GetAttributeValue("title", null);
+                        string src = aNode?.GetAttributeValue("href", null);
+                        // Extrae la resolución
+                        string? resolution = null;
+                        var resNode = item.SelectSingleNode(".//div[contains(@class,'entry-resolutions')]/a");
+                        if (resNode != null)
+                        {
+                            resolution = resNode.InnerText.Trim();
+                        }
+                        // Asegura que el thumbnail sea una URL absoluta
+                        if (!string.IsNullOrEmpty(img_src) && !img_src.StartsWith("http"))
+                        {
+                            img_src = MoewallsBase + img_src;
+                        }
+                        if (string.IsNullOrEmpty(img_src))
+                        {
+                            Console.WriteLine($"[MOEWALLS DEBUG] Thumbnail vacío para: {title} - {src}");
+                        }
+                        else if (!img_src.StartsWith("http"))
+                        {
+                            Console.WriteLine($"[MOEWALLS DEBUG] Thumbnail mal formado: {img_src} para {title} - {src}");
+                        }
+                        wallpaper_responses.Add(new WallpaperResponse {
+                            Title = title,
+                            Thumbnail = img_src,
+                            Src = src,
+                            Resolution = resolution
+                        });
+                    }
+                    catch { }
+                }
             }
             return wallpaper_responses;
         }

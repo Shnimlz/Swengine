@@ -70,54 +70,6 @@ public partial class MainWindowViewModel{
         panel.Children.Add(selectedFile);
         return panel;
     }
-   private StackPanel CustomScriptsDialogContent()
-        {
-            TextBlock customScriptText = new()
-            {
-                Text = "Enter commands you want to run after a new wallpaper has been set. One command per line. Substitute \"$1\" for the full path of the newly set wallpaper. TAKE GREAT CAUTION HERE",
-                TextWrapping = Avalonia.Media.TextWrapping.Wrap
-            };
-            
-            TextEditor customScriptBox = new()
-            {
-                WordWrap = true,
-                ShowLineNumbers = true,
-                Height = 100,
-                Document = new() { Text = "A sample text" }
-            };
-            
-            customScriptBox.Bind(TextEditor.DocumentProperty, new Binding()
-            {
-                Source = this,
-                Path = "CustomScriptsContent",
-                Mode = BindingMode.TwoWay
-            });
-            
-            StackPanel wrapper = new();
-            wrapper.Children.Add(customScriptText);
-            wrapper.Children.Add(customScriptBox);
-            
-            return wrapper; // Ahora retorna StackPanel específicamente
-        }
-    public async void OpenCustomScriptsDialog(){
-        var readonly_custom_script_content = CustomScriptsHelper.ScriptsFileContent;
-        if(readonly_custom_script_content == null)
-            CustomScriptsContent.Text = "echo $wallpaper";
-        else
-            CustomScriptsContent.Text = readonly_custom_script_content;
-        
-        var dialog  =  new ContentDialog(){
-                Title = "Custom Scripts",
-                IsPrimaryButtonEnabled = true,
-                PrimaryButtonText = "Add Script",
-                Content = CustomScriptsDialogContent()
-        };
-        var dialogResponse = await dialog.ShowAsync();
-        if(dialogResponse ==  ContentDialogResult.Primary){
-            //save the content to the scripts file. Really just run this whether it fails or not.
-           CustomScriptsHelper.SetScriptsFileContent(CustomScriptsContent.Text);
-        }
-    }
 
     private async void HandleFileDialog(){
         var toplevel = (Application.Current!.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow;
@@ -134,5 +86,55 @@ public partial class MainWindowViewModel{
 
         if (files.Count >= 1)
             SelectedFile = files[0].TryGetLocalPath() ?? "";
+    }
+
+    private object CustomScriptsDialogContent(){
+         TextBlock customScriptText = new(){
+            Text = "Enter commands you want to run after a new wallpaper has been set. One command per line. Substitute \"$1\" for the full path of the newely set wallpaper. TAKE GREAT CAUTION HERE",
+            TextWrapping = Avalonia.Media.TextWrapping.Wrap
+        };
+          TextEditor customScriptBox = new(){
+           WordWrap = true,
+           ShowLineNumbers = true,  
+           Height = 100,
+          Document = new() {Text = "A sample text"}
+        };
+        customScriptBox.Bind(TextEditor.DocumentProperty, new Binding(){
+             Source = this,
+             Path = "CustomScriptsContent",
+             Mode = BindingMode.TwoWay
+        });
+        StackPanel wrapper = new();
+        wrapper.Children.Add(customScriptText);
+        wrapper.Children.Add(customScriptBox);
+
+        return wrapper;
+    }
+    public async void OpenCustomScriptsDialog(){
+        var readonly_custom_script_content = CustomScriptsHelper.ScriptsFileContent;
+        if(readonly_custom_script_content == null)
+            CustomScriptsContent.Text = "echo $wallpaper";
+        else
+            CustomScriptsContent.Text = readonly_custom_script_content;
+        
+        var dialog  =  new ContentDialog(){
+                Title = "Custom Scripts",
+                IsPrimaryButtonEnabled = true,
+                PrimaryButtonText = "Add Script",
+                Content = CustomScriptsDialogContent()
+        };
+        var dialogResponse = await dialog.ShowAsync();
+        if(dialogResponse ==  ContentDialogResult.Primary){
+            // Al pulsar "Add Script", abre la ventana de edición
+            var mainWindow = (Application.Current!.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+            var scriptEditor = new swengine.desktop.Views.ScriptEditorWindow(CustomScriptsContent.Text);
+            scriptEditor.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            var result = await scriptEditor.ShowDialog<bool?>(mainWindow);
+            if (result == true && !string.IsNullOrWhiteSpace(scriptEditor.ScriptContent))
+            {
+                CustomScriptsContent.Text = scriptEditor.ScriptContent;
+                CustomScriptsHelper.SetScriptsFileContent(CustomScriptsContent.Text);
+            }
+        }
     }
 }
