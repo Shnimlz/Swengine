@@ -19,6 +19,11 @@ using Avalonia.Controls;
 namespace swengine.desktop.ViewModels;
 
 public partial class MainWindowViewModel : ObservableObject {
+    private const string AurPackageName = "swengine-revanced"; // Cambiado al nombre real en el AUR
+    public bool UpdateAvailable { get; private set; } = false;
+    public string? LatestAurVersion { get; private set; }
+    public IRelayCommand UpdateCommand { get; }
+
     public IRelayCommand SearchCommand { get; }
     public IRelayCommand RefreshCommand { get; }
     
@@ -38,6 +43,11 @@ public partial class MainWindowViewModel : ObservableObject {
     private static readonly Random _rnd = new();
 
     public MainWindowViewModel() {
+        UpdateCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(LaunchAurUpdate);
+        CheckForAurUpdate();
+        UpdateCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(LaunchAurUpdate);
+        CheckForAurUpdate();
+
         // Inicializar campos obligatorios antes de usar
         BgsProvider = null!; // Se inicializará en SetProvider()
         wallpaperResponses = new ObservableCollection<WallpaperResponse>();
@@ -53,6 +63,30 @@ public partial class MainWindowViewModel : ObservableObject {
         // RequestMoveToTop += RequestMoveToTop;
         // RequestClearImageLoader += RequestClearImageLoader;
     }
+
+    private async void CheckForAurUpdate()
+    {
+        try
+        {
+            UpdateAvailable = await swengine.desktop.Services.AurUpdateService.IsUpdateAvailableAsync(AurPackageName);
+            if (UpdateAvailable)
+            {
+                LatestAurVersion = await swengine.desktop.Services.AurUpdateService.GetAurVersionAsync(AurPackageName);
+                await ShowWarningDialog($"¡Nueva versión disponible en AUR! Versión: {LatestAurVersion}\n¿Quieres actualizar ahora?\n\nPuedes hacerlo desde el menú de la app o ejecutando yay -Syu {AurPackageName}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[AUR UPDATE] Error: {ex.Message}");
+        }
+    }
+
+    private void LaunchAurUpdate()
+    {
+        swengine.desktop.Services.AurUpdateService.LaunchUpdate(AurPackageName);
+      (Avalonia.Application.Current.ApplicationLifetime as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.Shutdown();
+    }
+
 
     // Inicializar con null-forgiving operator ya que se garantiza la inicialización en SetProvider()
     public IBgsProvider BgsProvider = null!;
