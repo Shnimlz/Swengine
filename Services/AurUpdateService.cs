@@ -36,6 +36,24 @@ public static class AurUpdateService {
             return null;
         }
         
+    public class AurVersionInfo
+    {
+        public string? Installed { get; set; }
+        public string? Aur { get; set; }
+        public bool UpdateAvailable => Installed != null && Aur != null && Installed != Aur;
+    }
+
+    public static async Task<AurVersionInfo> GetAurVersionStatusAsync(string packageName)
+    {
+        var installed = await GetInstalledVersionAsync(packageName);
+        var aur = await GetAurVersionAsync(packageName);
+        return new AurVersionInfo
+        {
+            Installed = installed,
+            Aur = aur
+        };
+    }
+
     public static async Task<bool> IsUpdateAvailableAsync(string packageName) {
         var installed = await GetInstalledVersionAsync(packageName);
         var aur = await GetAurVersionAsync(packageName);

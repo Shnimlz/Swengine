@@ -19,8 +19,8 @@ public static class WallpaperHelper
     bool bestSettings, 
     string backend,
     CancellationToken token, 
-    string? referrer = null
-    
+    string? referrer = null,
+    IProgress<double>? progress = null
     )
     {
         if(wallpaper == null){
@@ -88,6 +88,9 @@ public static class WallpaperHelper
         {
             applicationStatusWrapper.Status  = $"Wallpaper Applied Successfully in {applicationTimeSpanText}";
         });
+        // Ejemplo de integración desde el ViewModel:
+        // var progress = new Progress<double>(val => Progress = val);
+        // await WallpaperHelper.ApplyWallpaperAsync(..., progress: progress);
        
     }
 }

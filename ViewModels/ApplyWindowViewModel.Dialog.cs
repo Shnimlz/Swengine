@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.Media;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using FluentAvalonia.UI.Controls;
@@ -15,13 +16,30 @@ using LibVLCSharp.Shared;
 using swengine.desktop.Helpers;
 using swengine.desktop.Models;
 using swengine.desktop.Services;
+
 namespace swengine.desktop.ViewModels;
 
-public partial class ApplyWindowViewModel{
-  //Content for the content dialog that requests for FPS,resolution, e.t.c
+public partial class ApplyWindowViewModel : DialogViewModelBase
+{
+    [ObservableProperty]
+    private double progress;
 
-    private object ApplyDialogContent()
+    //Content for the content dialog that requests for FPS,resolution, e.t.c
+
+    private StackPanel ApplyDialogContent()
     {
+        ProgressBar progressBar = new()
+        {
+            Minimum = 0,
+            Maximum = 100,
+            Height = 20
+        };
+        progressBar.Bind(ProgressBar.ValueProperty, new Binding
+        {
+            Source = this,
+            Path = "Progress",
+            Mode = BindingMode.OneWay
+        });
         StackPanel panel = new();
         //resolution selector
         ComboBox ResolutionSelector = new();
@@ -41,9 +59,18 @@ public partial class ApplyWindowViewModel{
             Source = this,
             Mode = BindingMode.TwoWay
         });
-        TextBlock BestSettingsText = new(){
-            Text = "Use the most ideal settings for this wallpaper:"
+        TextBlock BestSettingsText = new()
+        {
+            Text = "⚠️ Remember:\n"
+                 + "• Higher resolution = higher RAM usage.\n"
+                 + "• If you select a different resolution, avoid setting it to 60fps on low-resource PCs, as it will consume a lot of RAM.",
+            Foreground = Brushes.Red
         };
+        TextBlock BestSettingsText2 = new()
+        {
+            Text = "⚠️ Use the most ideal settings for this wallpaper.\n\n"
+        };
+
         //RESOLUTION SELECTOR SELECT
         ResolutionSelector.Bind(ComboBox.SelectedItemProperty, new Binding()
         {
@@ -66,7 +93,9 @@ public partial class ApplyWindowViewModel{
         UserSelectedContent.Children.Add(FpsSelectorText);
         UserSelectedContent.Children.Add(FpsSelector);
 
+        panel.Children.Insert(0, progressBar);
         panel.Children.Add(BestSettingsText);
+        panel.Children.Add(BestSettingsText2);
         panel.Children.Add(BestSettingsCheckBox);
         panel.Children.Add(UserSelectedContent);
         

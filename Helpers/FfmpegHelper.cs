@@ -9,20 +9,15 @@ namespace swengine.desktop.Helpers;
 
 public static class FfmpegHelper
 {
-    /*
-    *ConvertAsync will return the location of the converted file if successful, or null if unsuccesful
-    **/
     public async static Task<string?> ConvertAsync(string file, double startAt = 0, double endAt = 5, GifQuality quality = GifQuality.q1080p, int fps = 60, bool bestSettings = false)
     {
         try
         {
-            // Force garbage collection before heavy processing
             GC.Collect();
             GC.WaitForPendingFinalizers();
 
             string home = Environment.GetEnvironmentVariable("HOME");
 
-            //if file is not a video, dont bother converting. Just return the image.
             if (Path.GetExtension(file).ToLower() != ".mp4" && Path.GetExtension(file).ToLower() != ".mkv")
             {
                 string copyTo = home + "/Pictures/wallpapers/" + file.Split("/").Last();
@@ -35,66 +30,54 @@ public static class FfmpegHelper
             string convertTo = home + "/Pictures/wallpapers/" + file.Split("/").Last().Split(".").First() + ".gif";
             string tmpPalette = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + "_palette.png");
 
-            try
+            var paletteProcess = new Process
             {
-                // 1. Crear paleta de colores optimizada directamente del video original
-                var paletteProcess = new Process
+                StartInfo = new()
                 {
-                    StartInfo = new()
-                    {
-                        FileName = "ffmpeg",
-                        Arguments = bestSettings
-                            ? $"-threads 2 -hwaccel none -i \"{file}\" -vf \"palettegen=reserve_transparent=0:max_colors=256:stats_mode=diff\" -y \"{tmpPalette}\""
-                            : $"-threads 2 -hwaccel none -ss {startAt} -t {endAt} -i \"{file}\" -vf \"scale=-1:{QualityParser(quality)}:flags=lanczos,fps={Math.Min(fps, 24)},palettegen=reserve_transparent=0:max_colors=256:stats_mode=diff\" -y \"{tmpPalette}\"",
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        UseShellExecute = false,
-                        CreateNoWindow = true
-                    }
-                };
-
-                await RunProcessWithTimeoutAsync(paletteProcess, TimeSpan.FromMinutes(3));
-
-                if (!File.Exists(tmpPalette))
-                {
-                    return null;
+                    FileName = "ffmpeg",
+                    Arguments = bestSettings
+                        ? $"-threads 4 -hwaccel none -i \"{file}\" -vf \"palettegen=reserve_transparent=0:max_colors=256:stats_mode=diff\" -y \"{tmpPalette}\""
+                        : $"-threads 4 -hwaccel none -ss {startAt} -t {endAt} -i \"{file}\" -vf \"scale=-1:{QualityParser(quality)}:flags=lanczos,fps={Math.Min(fps, 24)},palettegen=reserve_transparent=0:max_colors=256:stats_mode=diff\" -y \"{tmpPalette}\"",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
                 }
+            };
 
-                // 2. Convertir a GIF usando la paleta optimizada para calidad de wallpaper, directamente del video original
-                string gifArgs = bestSettings
-                    ? $"-threads 2 -hwaccel none -i \"{file}\" -i \"{tmpPalette}\" -lavfi \"[0:v][1:v]paletteuse=dither=sierra2_4a:diff_mode=rectangle:alpha_threshold=128\" -loop 0 -y \"{convertTo}\""
-                    : $"-threads 2 -hwaccel none -ss {startAt} -t {endAt} -i \"{file}\" -i \"{tmpPalette}\" -lavfi \"scale=-1:{QualityParser(quality)}:flags=lanczos,fps={Math.Min(fps, 24)}[scaled];[scaled][1:v]paletteuse=dither=sierra2_4a:diff_mode=rectangle:alpha_threshold=128\" -loop 0 -y \"{convertTo}\"";
+            await RunProcessWithTimeoutAsync(paletteProcess, TimeSpan.FromMinutes(3));
 
-                var convertProcess = new Process
-                {
-                    StartInfo = new()
-                    {
-                        FileName = "ffmpeg",
-                        Arguments = gifArgs,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        UseShellExecute = false,
-                        CreateNoWindow = true
-                    }
-                };
-
-                await RunProcessWithTimeoutAsync(convertProcess, TimeSpan.FromMinutes(10));
-
-                //if gif does not exist then conversion failed. Return false
-                if (!File.Exists(convertTo))
-                {
-                    return null;
-                }
-
-                //if everything went smoothly, delete the mp4.
-                File.Delete(file);
-                return convertTo;
-            }
-            finally
+            if (!File.Exists(tmpPalette))
             {
-                // Clean up temporary files including palette
-                CleanupTempFiles(tmpPalette, Path.Combine(Path.GetTempPath(), "*_palette.png"));
+                return null;
             }
+
+            string gifArgs = bestSettings
+                ? $"-threads 2 -hwaccel none -i \"{file}\" -i \"{tmpPalette}\" -lavfi \"[0:v][1:v]paletteuse=dither=sierra2_4a:diff_mode=rectangle:alpha_threshold=128\" -loop 0 -y \"{convertTo}\""
+                : $"-threads 2 -hwaccel none -ss {startAt} -t {endAt} -i \"{file}\" -i \"{tmpPalette}\" -lavfi \"scale=-1:{QualityParser(quality)}:flags=lanczos,fps={Math.Min(fps, 24)}[scaled];[scaled][1:v]paletteuse=dither=sierra2_4a:diff_mode=rectangle:alpha_threshold=128\" -loop 0 -y \"{convertTo}\"";
+
+            var convertProcess = new Process
+            {
+                StartInfo = new()
+                {
+                    FileName = "ffmpeg",
+                    Arguments = gifArgs,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+
+            await RunProcessWithTimeoutAsync(convertProcess, TimeSpan.FromMinutes(10));
+
+            if (!File.Exists(convertTo))
+            {
+                return null;
+            }
+
+            File.Delete(file);
+            return convertTo;
         }
         catch (Exception ex)
         {
@@ -106,13 +89,8 @@ public static class FfmpegHelper
     private static async Task RunProcessWithTimeoutAsync(Process process, TimeSpan timeout)
     {
         process.Start();
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
-        
-        // Wait for process with timeout
-        var completedWithinTimeout = process.WaitForExit((int)timeout.TotalMilliseconds);
-        
-        if (!completedWithinTimeout)
+        process.WaitForExit((int)timeout.TotalMilliseconds);
+        if (!process.HasExited)
         {
             try
             {
