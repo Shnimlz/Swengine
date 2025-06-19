@@ -12,20 +12,21 @@
         Width="1080"
         Title="ApplyWindow"
         CanResize="False">
+    
+
+     <Window.Background>
+        <DynamicResource ResourceKey="MainBackgroundColor"/>
+    </Window.Background>
+
     <Design.DataContext>
         <vm:DesignApplyWindowViewModel/>
     </Design.DataContext>
-    <Window.Background>
-        <SolidColorBrush Color="#19192c"/>
-    </Window.Background>
-    <Grid RowDefinitions="Auto,1" Margin="15, 15, 15, 15" Background="#19192c">
+    
+    <Grid RowDefinitions="Auto,1" Margin="15, 15, 15, 15">
         <vlc:VideoView Grid.Row="0"  Height="450"  x:Name="video" Margin="0,0,0,0" IsVisible="{Binding  IsVideoVisible}">
-            
-            <!-- <TextBlock Text="{Binding Wallpaper.Resolution}" HorizontalAlignment="Right"></TextBlock> -->
         </vlc:VideoView>
         <StackPanel Grid.Row="1">
             <StackPanel>
-               <!--  <Button Content="Load Wallpapers" Click="LoadWallpapers"/> -->
                 <ListBox x:Name="WallpaperList"/>
             </StackPanel>
             <Button HorizontalAlignment="Center" Margin="0,20,0,0" Command="{Binding ApplyWallpaper}">Apply This Wallpaper</Button>

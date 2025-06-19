@@ -1,7 +1,13 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="swengine.desktop.Views.ScriptEditorWindow"
-        Title="Edit Script" Width="500" Height="350">
+        Title="Script Editor" Width="500" Height="400"
+        Background="{DynamicResource SecondaryBackgroundColor}">
+    <Window.Resources>
+        <SolidColorBrush x:Key="SecondaryBackgroundColor" Color="#2f3855"/>
+        <SolidColorBrush x:Key="TextForegroundColor" Color="#F4F5FC"/>
+    </Window.Resources>
+    
     <StackPanel Margin="10">
         <TextBlock Text="Edit your script:" Margin="0,0,0,5"/>
         <TextBox Name="ScriptTextBox" AcceptsReturn="True" Height="220"/>

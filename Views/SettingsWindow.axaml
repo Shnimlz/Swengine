@@ -1,0 +1,29 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="swengine.desktop.Views.SettingsWindow"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        xmlns:vm="clr-namespace:Swengine.ViewModels"
+        x:DataType="vm:SettingsViewModel"
+        Title="Ajustes"
+        Width="350" Height="200"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource MainBackgroundColor}">
+    <Window.Resources>
+        <SolidColorBrush x:Key="MainBackgroundColor" Color="#24293E"/>
+        <SolidColorBrush x:Key="TextForegroundColor" Color="#F4F5FC"/>
+    </Window.Resources>
+    <StackPanel Margin="20">
+        <TextBlock Text="Ajustes generales" FontWeight="Bold" FontSize="18"/>
+        <TextBlock Text="Tema" Margin="0,0,0,5"/>
+<ComboBox ItemsSource="{Binding AvailableThemes}"
+          SelectedItem="{Binding SelectedTheme, Mode=TwoWay}"
+          MinWidth="120"
+          Margin="0,0,0,10"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0" Spacing="10">
+            <Button Content="Cerrar" Command="{Binding CloseCommand}"/>
+            <Button Content="Aplicar" Command="{Binding ApplyCommand}"/>
+        </StackPanel>
+    </StackPanel>
+</Window>

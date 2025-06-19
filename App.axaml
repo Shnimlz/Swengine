@@ -2,7 +2,7 @@
              xmlns:labs="using:Avalonia.Labs.Controls;assembly=Avalonia.Labs.Gif"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="swengine.desktop.App"
-             xmlns:local="using:swengine.desktop"
+             xmlns:local="clr-namespace:swengine.desktop.Views"
              xmlns:ui="using:FluentAvalonia.UI.Controls"
             xmlns:uip="using:FluentAvalonia.UI.Controls.Primitives" 
           xmlns:sty="using:FluentAvalonia.Styling"
@@ -16,6 +16,7 @@
     </Application.Styles>
 
      <Application.Resources>
+        <local:StringNullOrEmptyToBoolConverter x:Key="StringNullOrEmptyToBoolConverter" />
         <FontFamily x:Key="NunitoFont">avares://Swengine/Assets/Fonts#Nunito</FontFamily>
         <FontFamily x:Key="WarixFont">avares://Swengine/Assets/Fonts#Warix</FontFamily>
         <FontFamily x:Key="NexaTextFont">avares://Swengine/Assets/Fonts#Nexa</FontFamily>

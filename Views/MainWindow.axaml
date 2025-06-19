@@ -17,10 +17,12 @@ Ventana principal de la aplicación Swengine con animaciones corregidas usando p
         Icon="/Assets/avalonia-logo.ico"
         Title="swengine.desktop">
     <Window.Resources>
+        <SolidColorBrush x:Key="MainBackgroundColor" Color="#24293E"/>
+        <SolidColorBrush x:Key="SecondaryBackgroundColor" Color="#32385B"/>
         <local:StringNullOrEmptyToBoolConverter x:Key="StringNullOrEmptyToBoolConverter" />
     </Window.Resources>
     <Window.Background>
-        <SolidColorBrush Color="#19192c"/>
+        <DynamicResource ResourceKey="MainBackgroundColor"/>
     </Window.Background>
     <Design.DataContext>
         <vm:MainWindowViewModel/>
@@ -28,6 +30,32 @@ Ventana principal de la aplicación Swengine con animaciones corregidas usando p
 
     <!-- Estilos con animaciones usando propiedades directas -->
     <Window.Styles>
+            <Style Selector="Button.TopBarButton">
+        <Setter Property="Width" Value="44"/>
+        <Setter Property="Height" Value="44"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="8"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.2"/>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    
+    <Style Selector="Button.TopBarButton:pointerover">
+        <Setter Property="Background" Value="#33FFFFFF"/>
+        <Setter Property="Opacity" Value="0.9"/>
+    </Style>
+    
+    <Style Selector="Button.TopBarButton:pressed">
+        <Setter Property="Background" Value="#22FFFFFF"/>
+        <Setter Property="Opacity" Value="0.8"/>
+    </Style>
         <!-- Estilos para el contenedor de búsqueda -->
         <Style Selector="Border#SearchContainer">
             <Setter Property="Width" Value="60"/>
@@ -95,13 +123,10 @@ Ventana principal de la aplicación Swengine con animaciones corregidas usando p
         </Style>
     </Window.Styles>
 
-    <Grid RowDefinitions="Auto,Auto,*" Background="#19192c">
+    <Grid RowDefinitions="Auto,Auto,*">
         <TextBlock Padding="10" FontFamily="{StaticResource WarixFont}" Text="Swengine" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
         <ProgressBar IsIndeterminate="True" Grid.Row="0" IsVisible="{Binding DataLoading}"></ProgressBar>
         <StackPanel Grid.Row="1">
-            <StackPanel.Background>
-                <SolidColorBrush Color="#19192c" Opacity="0.5"/>
-            </StackPanel.Background>
 
             <!-- Barra superior unificada con anchos ajustados para 1280x720 -->
             <Grid Margin="10,10,20,10" HorizontalAlignment="Stretch" VerticalAlignment="Center">
@@ -112,15 +137,44 @@ Ventana principal de la aplicación Swengine con animaciones corregidas usando p
                 </Grid.ColumnDefinitions>
 
                 <!-- Botones Upload y Scripts -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Column="0" Margin="0,0,30,0">
-                    <Button Command="{Binding OpenUploadDialog}" Width="100" Height="40" Margin="5,0" FontFamily="{StaticResource NexaFont}">Upload</Button>
-                    <Button Command="{Binding OpenCustomScriptsDialog}" Width="100" Height="40" Margin="5,0" FontFamily="{StaticResource NexaFont}">Scripts</Button>
-                    <Button Command="{Binding RefreshCommand}" Width="100" Height="40" Margin="5,0" FontFamily="{StaticResource NexaFont}">Refresh</Button>
+                <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Spacing="8">
+                    <Button x:Name="UploadButton"
+                            Classes="TopBarButton"
+                            Command="{Binding OpenUploadDialog}">
+                        <Viewbox Width="20" Height="20">
+                            <Path Data="M13 10v6H7v-6H2l8-8l8 8h-5zM0 18h20v2H0v-2z" Fill="White"/>
+                        </Viewbox>
+                    </Button>
+                    <Button x:Name="ScriptButton"
+                            Classes="TopBarButton"
+                            Command="{Binding OpenCustomScriptsDialog}">
+                        <Viewbox Width="20" Height="20">
+                            <Canvas Width="32" Height="32">
+                                <Path Data="M18.83 26l2.58-2.58L20 22l-4 4l4 4l1.42-1.41L18.83 26zm8.34 0l-2.58 2.58L26 30l4-4l-4-4l-1.42 1.41L27.17 26z" Fill="White"/>
+                                <Path Data="M14 28H8V4h8v6a2.006 2.006 0 0 0 2 2h6v6h2v-8a.91.91 0 0 0-.3-.7l-7-7A.909.909 0 0 0 18 2H8a2.006 2.006 0 0 0-2 2v24a2.006 2.006 0 0 0 2 2h6Zm4-23.6l5.6 5.6H18Z" Fill="White"/>
+                            </Canvas>
+                        </Viewbox>
+                    </Button>
+                    <Button x:Name="RefreshButton"
+                            Classes="TopBarButton"
+                            Command="{Binding RefreshCommand}">
+                        <Viewbox Width="20" Height="20">
+                            <Path Data="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" Fill="White"/>
+                        </Viewbox>
+                    </Button>
+                    <Button x:Name="SettingsButton"
+                            Classes="TopBarButton"
+                            Command="{Binding OpenSettingsCommand}">
+                        <Viewbox Width="20" Height="20">
+                            <Path Data="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.82,11.69,4.82,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z" Fill="White"/>
+                        </Viewbox>
+                    </Button>
                 </StackPanel>
 
+
                 <!-- Área de búsqueda animada en Border -->
-                <Border x:Name="SearchContainer" Height="40" CornerRadius="20" BorderThickness="0" BorderBrush="Transparent" Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Column="1">
-                    <Grid HorizontalAlignment="Left">
+                <Border x:Name="SearchContainer" Grid.Column="1" Height="40" CornerRadius="20" BorderThickness="0" BorderBrush="Transparent" Background="Transparent" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Grid HorizontalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="50"/>
                             <ColumnDefinition Width="*"/>
@@ -155,7 +209,7 @@ Ventana principal de la aplicación Swengine con animaciones corregidas usando p
                                 Command="{Binding SearchCommand}">
                             <Path Data="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" 
                                   Fill="White" 
-                                  Width="18" Height="18"/>
+                                  Width="20" Height="20"/>
                         </Button>
                     </Grid>
                 </Border>
@@ -172,7 +226,8 @@ Ventana principal de la aplicación Swengine con animaciones corregidas usando p
                             <DataTemplate>
                                 <TextBlock Text="{Binding}"
                                         TextAlignment="Center" 
-                                        HorizontalAlignment="Center"/>
+                                        HorizontalAlignment="Center" 
+                                        VerticalAlignment="Center"/>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
@@ -187,7 +242,8 @@ Ventana principal de la aplicación Swengine con animaciones corregidas usando p
                             <DataTemplate>
                                 <TextBlock Text="{Binding}" 
                                         TextAlignment="Justify" 
-                                        HorizontalAlignment="Center"/>
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"/>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
@@ -201,10 +257,7 @@ Ventana principal de la aplicación Swengine con animaciones corregidas usando p
         </Panel>
 
         <!-- Resultados -->
-        <ScrollViewer Grid.Row="2" x:Name="ScrollViewer">
-            <ScrollViewer.Background>
-                <SolidColorBrush Color="#19192c" Opacity="0.5"/>
-            </ScrollViewer.Background>
+        <ScrollViewer Grid.Row="2" x:Name="ScrollViewer" VerticalScrollBarVisibility="Hidden" >
             <ListBox ItemsSource="{Binding WallpaperResponses}" 
                     HorizontalAlignment="Center" 
                     Margin="0,30,0,20" 
@@ -270,12 +323,12 @@ Ventana principal de la aplicación Swengine con animaciones corregidas usando p
                                     Height="285"
                                     CornerRadius="6">
                                 <Grid>
-    <asyncImageLoader:AdvancedImage
-        Source="{Binding Thumbnail, FallbackValue=/Assets/placeholder.png}"
-        Stretch="UniformToFill"
-        VerticalAlignment="Center"
-        HorizontalAlignment="Center"
-        IsHitTestVisible="False"/>
+                                <asyncImageLoader:AdvancedImage
+                                    Source="{Binding Thumbnail, FallbackValue=/Assets/placeholder.png}"
+                                    Stretch="UniformToFill"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Center"
+                                    IsHitTestVisible="False"/>
                                     <!-- Resolución encima del thumbnail -->
                                     <TextBlock Text="{Binding Resolution}"
                                            HorizontalAlignment="Center"

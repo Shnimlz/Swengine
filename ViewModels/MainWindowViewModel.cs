@@ -12,23 +12,35 @@ using CommunityToolkit.Mvvm.Input;
 using AsyncImageLoader.Loaders;
 using swengine.desktop.Models;
 using swengine.desktop.Services;
-using Avalonia.Styling;
 using Avalonia;
-using Avalonia.Controls;
-using System.Diagnostics;
+using swengine.desktop.Views;
 
-namespace swengine.desktop.ViewModels;
-
-public partial class MainWindowViewModel : ObservableObject {
+namespace swengine.desktop.ViewModels
+{
+    public partial class MainWindowViewModel : ObservableObject {
     private const string AurPackageName = "swengine-revanced"; 
     public bool UpdateAvailable { get; private set; } = true;
     public string? LatestAurVersion { get; private set; }
     public IRelayCommand UpdateCommand { get; }
+    public IAsyncRelayCommand OpenSettingsCommand { get; }
+
+    private async Task OpenSettings()
+    {
+        var window = new SettingsWindow();
+        if (Avalonia.Application.Current.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
+        {
+            await window.ShowDialog(desktop.MainWindow);
+        }
+        else
+        {
+            window.Show();
+        }
+    }
 
     public IRelayCommand SearchCommand { get; }
-    public IRelayCommand RefreshCommand { get; }
+    public IAsyncRelayCommand RefreshCommand { get; }
     
-    private async void RefreshWallpapers()
+    private async Task RefreshWallpapers()
     {
         if (SelectedProvider == "Wallpaper Engine")
         {
@@ -43,7 +55,30 @@ public partial class MainWindowViewModel : ObservableObject {
 
     private static readonly Random _rnd = new();
 
+    [ObservableProperty]
+    private bool isHomeActive = true;
+    [ObservableProperty]
+    private bool isSettingsActive = false;
+
+    public void ActivateHome()
+    {
+        IsHomeActive = true;
+        IsSettingsActive = false;
+    }
+    public void ActivateSettings()
+    {
+        IsHomeActive = false;
+        IsSettingsActive = true;
+    }
+
+    public IRelayCommand GoHomeCommand { get; }
+    public IRelayCommand GoSettingsCommand { get; }
+
     public MainWindowViewModel() {
+        GoHomeCommand = new RelayCommand(ActivateHome);
+        GoSettingsCommand = new RelayCommand(ActivateSettings);
+    
+        OpenSettingsCommand = new AsyncRelayCommand(OpenSettings);
         UpdateCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(LaunchAurUpdate);
         _ = CheckForAurUpdateAsync(); 
         Console.WriteLine($"{UpdateCommand}");
@@ -55,7 +90,7 @@ public partial class MainWindowViewModel : ObservableObject {
         
         CurrentPage = _rnd.Next(1, 11); 
         SearchCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(Search);
-        RefreshCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(RefreshWallpapers);
+        RefreshCommand = new AsyncRelayCommand(RefreshWallpapers);
       
         SetProvider();
         Search();
@@ -330,4 +365,5 @@ if (results != null)
             _appendingToInfinteScroll = false;
         }
     }
+}
 }

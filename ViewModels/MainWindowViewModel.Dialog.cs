@@ -132,7 +132,9 @@ public partial class MainWindowViewModel{
     else
         dialogResponse = await dialog.ShowAsync();
         if(dialogResponse ==  ContentDialogResult.Primary){
-            var scriptEditor = new swengine.desktop.Views.ScriptEditorWindow(CustomScriptsContent.Text);
+            var mainWindowInstance = (Application.Current!.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow as swengine.desktop.Views.MainWindow;
+            var currentTheme = mainWindowInstance != null ? mainWindowInstance.GetCurrentTheme() : "dark";
+            var scriptEditor = new swengine.desktop.Views.ScriptEditorWindow(CustomScriptsContent.Text, currentTheme);
             scriptEditor.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             scriptEditor.Width = 620;
             scriptEditor.Height = 315;
