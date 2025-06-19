@@ -32,9 +32,9 @@ public static class MoewallsScraper {
                     {
                         var imgNode = item.SelectSingleNode(".//img");
                         var aNode = item.SelectSingleNode(".//a[@class='g1-frame']");
-                        string img_src = imgNode?.GetAttributeValue("src", null);
-                        string title = aNode?.GetAttributeValue("title", null);
-                        string src = aNode?.GetAttributeValue("href", null);
+                        string? img_src = imgNode?.GetAttributeValue("src", String.Empty);
+                        string? title = aNode?.GetAttributeValue("title", String.Empty);
+                        string? src = aNode?.GetAttributeValue("href", String.Empty);
                         // Extrae la resolución
                         string? resolution = null;
                         var resNode = item.SelectSingleNode(".//div[contains(@class,'entry-resolutions')]/a");
@@ -67,7 +67,7 @@ public static class MoewallsScraper {
             }
             return wallpaper_responses;
         }
-        return default;
+        throw new Exception("Error al obtener los wallpapers");
     }
     public async static Task<Wallpaper> InfoAsync(string Query, string Title) {
         var http = HttpClientProvider.Client;
@@ -76,10 +76,8 @@ public static class MoewallsScraper {
             string response = await request.Content.ReadAsStringAsync();
             HtmlDocument htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(response);
-            string source_tag = htmlDoc.DocumentNode.SelectSingleNode("//source[@type='video/mp4']")
-                .GetAttributeValue("src", null);
-            string download = "https://moewalls.com/download.php?video=" + htmlDoc.DocumentNode.SelectSingleNode("//button[@id='moe-download']")
-                .GetAttributeValue("data-url", null);
+            string source_tag = htmlDoc.DocumentNode.SelectSingleNode("//source[@type='video/mp4']")!.GetAttributeValue("src", String.Empty);
+            string download = "https://moewalls.com/download.php?video=" + htmlDoc.DocumentNode.SelectSingleNode("//button[@id='moe-download']")!.GetAttributeValue("data-url", String.Empty);
             string text_xs = "4k";
             return new Wallpaper() {
                 Title = Title,
@@ -90,6 +88,6 @@ public static class MoewallsScraper {
                 NeedsReferrer = true
             };
         }
-        return default;
+        throw new Exception("Error al obtener los wallpapers");
     }
 }

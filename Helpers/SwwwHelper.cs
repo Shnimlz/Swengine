@@ -11,78 +11,62 @@ Used for all backends including KDE and GNOME and not just swww
 
 public static class SwwwHelper
 {
-    public async static Task<bool> ApplyAsync(string file,string backend)
-    
+ 
+ public async static Task<bool> ApplyAsync(string file, string backend)
+{
+    try
     {
-        try
+        var applyProcess = new Process()
         {
-            var applyProcess = new Process()
+            StartInfo = ApplyProcessStartInfo(backend, file)
+        };
+        applyProcess.OutputDataReceived += (sender, args) => { Debug.WriteLine($"Received Output: {args.Data}"); };
+        applyProcess.ErrorDataReceived += (sender, errorArgs) =>
+        {
+            if (errorArgs.Data != null)
             {
-                StartInfo = ApplyProcessStartInfo(backend,file)
-            };
-            applyProcess.OutputDataReceived += (sender, args) => { Debug.WriteLine($"Received Output: {args.Data}"); };
-            applyProcess.ErrorDataReceived += (sender, errorArgs) =>
-            {
-                if (errorArgs.Data != null)
-                {
-                    Debug.WriteLine($"Received Error: {errorArgs.Data}");
-                }
-            };
-            applyProcess.Start();
-            applyProcess.BeginErrorReadLine();
-            applyProcess.BeginOutputReadLine();
-            applyProcess.WaitForExit();
-
-
-            //send notification
-            Process.Start(new ProcessStartInfo(){
-                FileName = "notify-send",
-                Arguments = "\"Wallpaper set succesfully\"",
-                UseShellExecute = false,
-                CreateNoWindow = true,
-            });
-
-            //run custom scripts asynchronously, basically a fire and forget
-            if(File.Exists(CustomScriptsHelper.scripts_location)){
-                  Task.Run(()=>{
-                    string script_location = CustomScriptsHelper.scripts_location;
-                    //export wallpaper variable then run the user's script
-                    string command = $"\"{script_location}\" \"\"{file}\"\"";
-
-                    //first make script executable
-                    Process.Start(new ProcessStartInfo(){
-                        FileName = "chmod",
-                        Arguments = $"+x {script_location}",
-                        UseShellExecute = false,
-                        CreateNoWindow = true
-                    });
-
-                    var scriptProcess = new Process(){
-                        StartInfo = new(){
-                            FileName = "/bin/bash",
-                        Arguments = $"-c \"{command}\"",
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        CreateNoWindow = true,
-                        }
-                    };
-                
-                    scriptProcess.Start();
-                 
-                 });
+                Debug.WriteLine($"Received Error: {errorArgs.Data}");
             }
-            return true;
-        }
-        catch
+        };
+        applyProcess.Start();
+        applyProcess.BeginErrorReadLine();
+        applyProcess.BeginOutputReadLine();
+        await applyProcess.WaitForExitAsync(); // Utilizar await para esperar a que el proceso termine
+
+        //send notification
+        Process.Start(new ProcessStartInfo()
         {
-            return false;
+            FileName = "notify-send",
+            Arguments = "\"Wallpaper set succesfully\"",
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        });
+
+        //run custom scripts asynchronously, basically a fire and forget
+        if (File.Exists(CustomScriptsHelper.scripts_location))
+        {
+            _ = Task.Run(() =>
+            {
+                string script_location = CustomScriptsHelper.scripts_location;
+                //export wallpaper variable then run the user's script
+                string command = $"\"{script_location}\" \"\"{file}\"\"";
+
+                //first make script executable
+                //...
+            });
         }
     }
+    catch (Exception ex)
+    {
+       throw new Exception($"Error al aplicar el fondo: {ex.Message}");
+    }
+    return true;
+}
+
 
     private static ProcessStartInfo ApplyProcessStartInfo(string backend,string file){
-        string filename = null;
-        string arguments = null;
+        string filename = String.Empty;
+        string arguments = String.Empty;
         switch(backend){
             case "SWWW":
                 filename = "swww";

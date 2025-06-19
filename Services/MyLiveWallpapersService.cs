@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ public class MyLiveWallpapersService : IBgsProvider
         }
         catch
         {
-            return default;
+        throw new Exception("Error al obtener los wallpapers");
         }
     }
 
@@ -27,7 +28,7 @@ public class MyLiveWallpapersService : IBgsProvider
         }
         catch
         {
-            return default;
+          throw new Exception("Error al obtener los wallpapers");
         }
     }
 
@@ -41,7 +42,7 @@ public class MyLiveWallpapersService : IBgsProvider
         }
         catch
         {
-            return default;
+          throw new Exception("Error al obtener los wallpapers");
         }
     }
 }

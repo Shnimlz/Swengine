@@ -14,6 +14,7 @@ using swengine.desktop.Models;
 using swengine.desktop.Services;
 using Avalonia;
 using swengine.desktop.Views;
+using System.Diagnostics;
 
 namespace swengine.desktop.ViewModels
 {
@@ -27,7 +28,7 @@ namespace swengine.desktop.ViewModels
     private async Task OpenSettings()
     {
         var window = new SettingsWindow();
-        if (Avalonia.Application.Current.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
+        if (Application.Current!.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
         {
             await window.ShowDialog(desktop.MainWindow);
         }
@@ -329,7 +330,7 @@ if (results != null)
             {
                 foreach (var wp in WallpaperResponses)
                 {
-                    Console.WriteLine($"[DEBUG] Thumbnail: {wp.Thumbnail}");
+                    Debug.WriteLine($"[DEBUG] Thumbnail: {wp.Thumbnail}");
                 }
             }
             DataLoading = false;

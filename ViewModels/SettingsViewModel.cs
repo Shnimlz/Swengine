@@ -53,8 +53,8 @@ namespace Swengine.ViewModels
                 var data = JsonSerializer.Deserialize<SettingsData>(json);
                 if (data != null)
                 {
-                    SelectedTheme = AvailableThemes.Contains(data.SelectedTheme)
-                        ? data.SelectedTheme : "dark";
+                    SelectedTheme = AvailableThemes.Contains(data.SelectedTheme ?? "dark") ? data.SelectedTheme ?? "dark" : "dark";
+                    //SelectedTheme = AvailableThemes.Contains(data.SelectedTheme) ? data.SelectedTheme : "dark";
                 }
             }
         }

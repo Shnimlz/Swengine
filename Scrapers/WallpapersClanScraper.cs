@@ -7,11 +7,10 @@ using System.Text.Json.Serialization;
 using swengine.desktop.Models;
 using HtmlAgilityPack;
 using System.Linq;
+using System;
 namespace swengine.desktop.Scrapers;
 public static class WallpapersClanScraper
 {
-    private static readonly string WpcBase = "https://wallpapers-clan.com/desktop-wallpapers/";
-    private static readonly string WpcLatest = "https://wallpapers-clan.com/wp-admin/admin-ajax.php";
 
     public async static Task<List<WallpaperResponse>> LatestAsync(int Page)
     {
@@ -45,15 +44,15 @@ public static class WallpapersClanScraper
         
         WallpapersClanJsonResonse jsonResponse = System.Text.Json.JsonSerializer.Deserialize<WallpapersClanJsonResonse>(responseBody, JsonContext.Default.WallpapersClanJsonResonse);
         HtmlDocument htmlDoc = new();
-        htmlDoc.LoadHtml(jsonResponse.data);
+        htmlDoc.LoadHtml(jsonResponse.data!);
 
         var articleNodes = htmlDoc.DocumentNode.SelectNodes("//article");
-        foreach (var article in articleNodes)
+        foreach (var article in articleNodes!)
         {
-            var last_a_tag = article.SelectNodes(".//a").Last();
+            var last_a_tag = article.SelectNodes(".//a")!.Last();
             string title = last_a_tag.InnerText;
-            string src = last_a_tag.GetAttributeValue("href", null);
-            string thumbnail = article.SelectSingleNode(".//img").GetAttributeValue("src", null);
+            string src = last_a_tag.GetAttributeValue("href", String.Empty);
+            string thumbnail = article.SelectSingleNode(".//img")!.GetAttributeValue("src", String.Empty);
             responses.Add(new()
             {
                 Title = title,
@@ -77,12 +76,12 @@ public static class WallpapersClanScraper
         string responseBody = await response.Content.ReadAsStringAsync();
         HtmlDocument htmlDoc = new HtmlDocument();
         htmlDoc.LoadHtml(responseBody);
-        string title = htmlDoc.DocumentNode.SelectSingleNode("//h1[contains(@class,'entry-title')]").InnerText;
-        string SourceFile = htmlDoc.DocumentNode.SelectSingleNode("//a[contains(@class,'wpdm-download-link')]").GetAttributeValue("data-downloadurl", "null-source");
-        string preview = htmlDoc.DocumentNode.SelectSingleNode("//img[contains(@class,'size-full') and contains(@class,'attachment-full')]").GetAttributeValue("data-lazy-srcset", null)?.Split(" ")[0];
+        string title = htmlDoc.DocumentNode.SelectSingleNode("//h1[contains(@class,'entry-title')]")!.InnerText;
+        string SourceFile = htmlDoc.DocumentNode.SelectSingleNode("//a[contains(@class,'wpdm-download-link')]")!.GetAttributeValue("data-downloadurl", "null-source");
+        string? preview = htmlDoc.DocumentNode.SelectSingleNode("//img[contains(@class,'size-full') and contains(@class,'attachment-full')]")!.GetAttributeValue("data-lazy-srcset", String.Empty)?.Split(" ")[0];
         if (preview == null)
         {
-            preview = htmlDoc.DocumentNode.SelectSingleNode("//img[contains(@class,'size-full') and contains(@class,'attachment-full')]").GetAttributeValue("data-lazy-src", null)?.Split(" ")[0];
+            preview = htmlDoc.DocumentNode.SelectSingleNode("//img[contains(@class,'size-full') and contains(@class,'attachment-full')]")!.GetAttributeValue("data-lazy-src", String.Empty)?.Split(" ")[0];
 
         }
         return new()
@@ -113,14 +112,14 @@ public static class WallpapersClanScraper
         htmlDoc.LoadHtml(responseBody);
 
         var articleNodes = htmlDoc.DocumentNode.SelectNodes("//article");
-        foreach (var article in articleNodes)
+        foreach (var article in articleNodes!)
         {
-            string title = article.SelectSingleNode(".//a[@class='qodef-e-title-link']").InnerText;
+            string title = article.SelectSingleNode(".//a[@class='qodef-e-title-link']")!.InnerText;
             //skip if article is not a desktop wallpaper
             if (!title.Contains("Desktop Wallpaper")) continue;
 
-            string preview = article.SelectSingleNode(".//img").GetAttributeValue("src", null);
-            string src = article.SelectSingleNode(".//a").GetAttributeValue("href", null);
+            string preview = article.SelectSingleNode(".//img")!.GetAttributeValue("src", String.Empty);
+            string src = article.SelectSingleNode(".//a")!.GetAttributeValue("href", String.Empty);
             responses.Add(new()
             {
                 Title = title,

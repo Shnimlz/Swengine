@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -12,11 +13,11 @@ public class MoewallsService : IBgsProvider
     {
         try
         {
-            return await MoewallsScraper.LatestOrSearchAsync(Page, Function: "latest");
+            return await MoewallsScraper.LatestOrSearchAsync(Page, Function: "latest")!;
         }
         catch
         {
-            return default;
+           throw new Exception("Error al obtener los wallpapers");
         }
     }
 
@@ -28,18 +29,18 @@ public class MoewallsService : IBgsProvider
         }
         catch
         {
-            return default;
+            throw new Exception("Error al obtener los wallpapers");
         }
     }
     public async Task<List<WallpaperResponse>> SearchAsync(string Query, int Page = 1)
     {
         try
         {
-            return await MoewallsScraper.LatestOrSearchAsync(Page, Function: "search", Query: Query);
+            return await MoewallsScraper.LatestOrSearchAsync(Page, Function: "search", Query: Query)!;
         }
         catch
         {
-            return default;
+            throw new Exception("Error al obtener los wallpapers");
         }
     }
 }

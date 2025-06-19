@@ -60,7 +60,7 @@ namespace swengine.desktop.Scrapers
                 url = $"{WallHavenBase}/search?q={Query}&categories=110&purity=100&sorting=date_added&order=desc&ai_art_filter=1&page={page}&ai_art_filter=0";
             }
 
-            List<WallpaperResponse> responses = new();
+            List<WallpaperResponse> responses = [];
             var http = GetBrowserLikeHttpClient();
 
             using var request = await http.GetAsync(url);
@@ -82,9 +82,9 @@ namespace swengine.desktop.Scrapers
                 {
                     foreach (var figure in figures)
                     {
-                        string src = figure.SelectSingleNode(".//a")?.GetAttributeValue("href", null);
+                        string src = figure.SelectSingleNode(".//a")!.GetAttributeValue("href", String.Empty);
                         string title = "Wallhaven Wallpaper";
-                        string img_src = figure.SelectSingleNode(".//img")?.GetAttributeValue("data-src", null);
+                        string img_src = figure.SelectSingleNode(".//img")!.GetAttributeValue("data-src", String.Empty);
                         if (!string.IsNullOrEmpty(src) && !string.IsNullOrEmpty(img_src))
                         {
                             responses.Add(new WallpaperResponse
@@ -98,7 +98,7 @@ namespace swengine.desktop.Scrapers
                 }
                 return responses;
             }
-            return default;
+           throw new WallHavenApiException((int)request.StatusCode, "Error al obtener los wallpapers");
         }
 
         public static async Task<Wallpaper> InfoAsync(string url)
@@ -120,7 +120,7 @@ namespace swengine.desktop.Scrapers
                 var htmlDoc = new HtmlDocument();
                 htmlDoc.LoadHtml(response);
 
-                string source = htmlDoc.DocumentNode.SelectSingleNode("//img[@id='wallpaper']")?.GetAttributeValue("data-cfsrc", null);
+                string source = htmlDoc.DocumentNode.SelectSingleNode("//img[@id='wallpaper']")!.GetAttributeValue("data-cfsrc", String.Empty);
                 string title = htmlDoc.DocumentNode.SelectSingleNode("//title")?.InnerHtml?.Trim() ?? "Wallpaper";
 
                 return new Wallpaper
@@ -133,7 +133,7 @@ namespace swengine.desktop.Scrapers
                 };
             }
 
-            return default;
+           throw new Exception("Error al obtener los wallpapers");
         }
     }
 }

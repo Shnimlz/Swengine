@@ -14,7 +14,7 @@ public class WallpapersClanService : IBgsProvider
     }
     catch
     {
-      return default;
+      throw;
     }
   }
   public async Task<List<WallpaperResponse>> LatestAsync(int Page = 1)
@@ -26,7 +26,7 @@ public class WallpapersClanService : IBgsProvider
     }
     catch
     {
-      return default;
+      throw;
     }
   }
 
@@ -39,7 +39,7 @@ public class WallpapersClanService : IBgsProvider
     }
     catch
     {
-      return default;
+     throw;
     }
   }
 }

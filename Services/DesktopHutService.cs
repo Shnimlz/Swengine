@@ -10,7 +10,7 @@ public class DesktopHutService : IBgsProvider {
         try {
             return await DesktopHutScraper.InfoAsync(Query);
         } catch {
-            return default;
+           throw;
         }
     }
 
@@ -18,7 +18,7 @@ public class DesktopHutService : IBgsProvider {
         try {
             return await DesktopHutScraper.LatestOrSearchAsync(Page, "latest");
         } catch {
-            return default;
+            throw;
         }
     }
 
@@ -26,7 +26,7 @@ public class DesktopHutService : IBgsProvider {
         try {
             return await DesktopHutScraper.LatestOrSearchAsync(Page, "search", Query);
         } catch {
-            return default;
+           throw;
         }
     }
 }

@@ -6,10 +6,17 @@ namespace swengine.desktop.Views
     public partial class ScriptEditorWindow : Window
     {
         public string ScriptContent { get; private set; } = string.Empty;
-      public ScriptEditorWindow(string initialContent, string theme)
+
+        // Parameterless constructor required for XAML
+        public ScriptEditorWindow()
         {
             InitializeComponent();
-            // Aplica el tema actual al abrir la ventana
+        }
+
+        // Constructor with parameters for actual usage
+        public ScriptEditorWindow(string initialContent, string theme) : this()
+        {
+            // Apply the current theme when opening the window
             Swengine.Helpers.ThemeHelper.ApplyTheme(this, theme);
             ScriptTextBox.Text = initialContent;
             SaveButton.Click += OnSaveClicked;
@@ -27,27 +34,24 @@ namespace swengine.desktop.Views
             this.Close(false);
         }
 
-    /// <summary>
-    /// Cambia el color de fondo del diálogo dinámicamente
-    /// </summary>
-    /// <param name="color">Color en formato hexadecimal (#RRGGBB o #AARRGGBB)</param>
-    private void SetDialogBackgroundColor(string color)
-    {
-        if (this.Resources.ContainsKey("DialogBackgroundColor"))
+        private void SetDialogBackgroundColor(string color)
         {
-            var brush = this.Resources["DialogBackgroundColor"] as Avalonia.Media.SolidColorBrush;
-            if (brush != null)
+            if (this.Resources.ContainsKey("DialogBackgroundColor"))
             {
-                brush.Color = Avalonia.Media.Color.Parse(color);
+                var brush = this.Resources["DialogBackgroundColor"] as Avalonia.Media.SolidColorBrush;
+                if (brush != null)
+                {
+                    brush.Color = Avalonia.Media.Color.Parse(color);
+                }
+                else
+                {
+                    this.Resources["DialogBackgroundColor"] = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(color));
+                }
             }
             else
             {
-                this.Resources["DialogBackgroundColor"] = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(color));
+                this.Resources.Add("DialogBackgroundColor", new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(color)));
             }
         }
-        else
-        {
-            this.Resources.Add("DialogBackgroundColor", new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(color)));
-        }
     }
-}}
+}

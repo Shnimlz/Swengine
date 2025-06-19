@@ -38,16 +38,16 @@ public static class MyLiveWallpapersScraper
         var posts =
             htmlDoc.DocumentNode.SelectNodes("//a[contains(@class,'post')]");
         if (posts is null)
-            return default;
+            throw new Exception("No posts found");
         foreach (var post in posts)
         {
-            string img_src = post.GetAttributeValue("style", null)
+            string img_src = post.GetAttributeValue("style", String.Empty)
                                  .Split("background-image: url( ")[1]
                                  .Split(");")[0];
 
-            string title = post.GetAttributeValue("href", null).Split("/")[^2];
+            string title = post.GetAttributeValue("href", String.Empty).Split("/")[^2];
 
-            string src = post.GetAttributeValue("href", null);
+            string src = post.GetAttributeValue("href", String.Empty);
             wallpaper_responses.Add(
                 new() { Title = title, Src = src, Thumbnail = img_src });
         }
@@ -70,14 +70,13 @@ public static class MyLiveWallpapersScraper
         htmlDoc.LoadHtml(responseBody);
         string title =
             htmlDoc.DocumentNode.SelectSingleNode("//h1[@class='post-title']")
-                .InnerText;
+                !.InnerText;
         string preview =
-            htmlDoc.DocumentNode.SelectSingleNode("//source[@type='video/mp4']")?
-                .GetAttributeValue("src", null);
+            htmlDoc.DocumentNode.SelectSingleNode("//source[@type='video/mp4']")!.GetAttributeValue("src", String.Empty);
         string sourcefile =
             htmlDoc.DocumentNode
                 .SelectSingleNode("//a[contains(@class,'wpdm-download-link')]")
-                .GetAttributeValue("data-downloadurl", null);
+                !.GetAttributeValue("data-downloadurl", String.Empty);
         return new Wallpaper()
         {
             Title = title,

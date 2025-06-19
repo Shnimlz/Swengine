@@ -35,11 +35,11 @@ public static class DesktopHutScraper
         HtmlDocument htmlDoc = new();
         htmlDoc.LoadHtml(responseBody);
         var items = htmlDoc.DocumentNode.SelectNodes(".//div[@class='masonry-item']");
-        foreach (var item in items)
+        foreach (var item in items!)
         {
-            var title = item.SelectSingleNode(".//h2").InnerHtml;
-            var src = _base + item.SelectSingleNode(".//a").GetAttributeValue("href", "").TrimStart('/');
-            var imgNode = item.SelectSingleNode(".//img");
+            var title = item?.SelectSingleNode(".//h2")!.InnerHtml;
+            var src = _base + item?.SelectSingleNode(".//a")!.GetAttributeValue("href", "").TrimStart('/');
+            var imgNode = item?.SelectSingleNode(".//img");
             string thumbnail = "";
             if (imgNode != null)
             {
@@ -67,8 +67,8 @@ public static class DesktopHutScraper
         string response = await request.Content.ReadAsStringAsync();
         var htmlDoc = new HtmlDocument();
         htmlDoc.LoadHtml(response);
-        var preview = htmlDoc.DocumentNode.SelectSingleNode("//source").GetAttributeValue("src", "");
-        var sourceFile = htmlDoc.DocumentNode.SelectSingleNode("//a[@id='downloadButton']").GetAttributeValue("href", "");
+        var preview = htmlDoc.DocumentNode.SelectSingleNode("//source")!.GetAttributeValue("src", "");
+        var sourceFile = htmlDoc.DocumentNode.SelectSingleNode("//a[@id='downloadButton']")!.GetAttributeValue("href", "");
         return new()
         {
             Title = Query.Split("/").Last(),

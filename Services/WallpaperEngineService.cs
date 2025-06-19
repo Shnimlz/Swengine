@@ -30,15 +30,15 @@ public class WallpaperEngineService : IBgsProvider
         return await LatestOrSearchAsync(Page, "search", Query);
     }
 
-    public async Task<Wallpaper> InfoAsync(string Query, string Title = "")
+   public async Task<Wallpaper> InfoAsync(string Query, string Title = "")
     {
-        // For Wallpaper Engine, the Query is the file path
-        return new Wallpaper
-        {
-            Title = Title,
-            Preview = Query, // Assuming the preview is the same as the source for simplicity
-            SourceFile = Query,
-            WallpaperType = WallpaperType.Live
-        };
+    // For Wallpaper Engine, the Query is the file path
+        return await Task.FromResult(new Wallpaper
+            {
+                Title = Title,
+                Preview = Query, // Assuming the preview is the same as the source for simplicity
+                SourceFile = Query,
+                WallpaperType = WallpaperType.Live
+            });
     }
 }

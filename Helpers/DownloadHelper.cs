@@ -15,7 +15,7 @@ public static class DownloadHelper
     **/
     public static async Task<string> DownloadAsync(string Link, string Title, bool NeedsReferrer = false, string Referer = "undefined")
     {
-        string HOME = Environment.GetEnvironmentVariable("HOME");
+        string? HOME = Environment.GetEnvironmentVariable("HOME");
         try
         {
             //check if file is local, if so copy it to required directory and return new path
@@ -51,7 +51,7 @@ public static class DownloadHelper
             else
             {
                 //try to get extension from url. If both options fail then default to mp4
-                string[] possibleExts = new[] { "jpg", "png", "mp4", "gif" };
+                string[] possibleExts = ["jpg", "png", "mp4", "gif"];
                 string ext = Link.Split(".").Last();
                 if (ext != null && possibleExts.Contains(ext))
                 {
@@ -66,7 +66,7 @@ public static class DownloadHelper
             //if file does not exist in path then download failed. Return false
             if (!File.Exists($"{HOME}/Pictures/wallpapers/preconvert/{Title}{extension}"))
             {
-                return null;
+                throw new Exception("Download failed");
             }
             return $"{HOME}/Pictures/wallpapers/preconvert/{Title}{extension}";
         }
@@ -75,20 +75,20 @@ public static class DownloadHelper
 #if __DEBUG__
             throw;
 #endif
-            return null;
+            return "";
         }
 
     }
     private static string CopyLocalFile(string file)
     {
-        string HOME = Environment.GetEnvironmentVariable("HOME");
+        string? HOME = Environment.GetEnvironmentVariable("HOME");
         Directory.CreateDirectory(HOME + "/Pictures/wallpapers/preconvert");
 
         string filename = Path.GetFileName(file);
         string dest = HOME + "/Pictures/wallpapers/preconvert/" + filename;
         File.Copy(file, dest, true);
         if (!File.Exists(dest))
-            return null;
+            throw new Exception("Download failed");
         return dest;
     }
 

@@ -26,11 +26,11 @@ public class WallpapersCraftScraper
         htmlDoc.LoadHtml(await request.Content.ReadAsStringAsync());
         var wallpaper_canvas = htmlDoc.DocumentNode.SelectNodes("//li[@class='wallpapers__item']");
         List<WallpaperResponse> responses = new();
-        foreach (var canvas in wallpaper_canvas)
+        foreach (var canvas in wallpaper_canvas!)
         {
-            string src = WallpapersCraftBase + canvas!.SelectSingleNode(".//a")!.GetAttributeValue("href", null);
-            string title = canvas!.SelectNodes(".//span[@class='wallpapers__info']")[1]!.InnerText;
-            string thumbnail = canvas!.SelectSingleNode(".//img")!.GetAttributeValue("src", null);
+            string src = WallpapersCraftBase + canvas!.SelectSingleNode(".//a")?.GetAttributeValue("href", string.Empty);
+            string title = canvas!.SelectNodes(".//span[@class='wallpapers__info']")?[1]?.InnerText ?? string.Empty;
+            string thumbnail = canvas!.SelectSingleNode(".//img")!.GetAttributeValue("src", string.Empty);
             responses.Add(new()
             {
                 Title = title,
@@ -47,8 +47,8 @@ public class WallpapersCraftScraper
         request.EnsureSuccessStatusCode();
         HtmlDocument htmlDoc = new HtmlDocument();
         htmlDoc.LoadHtml(await request.Content.ReadAsStringAsync());
-        string title = htmlDoc.DocumentNode.SelectSingleNode("//h1[contains(@class,'gui-heading')]").InnerText;
-        string preview = htmlDoc.DocumentNode.SelectSingleNode("//img[@class='wallpaper__image']").GetAttributeValue("src", null);
+        string title = htmlDoc.DocumentNode.SelectSingleNode("//h1[contains(@class,'gui-heading')]")!.InnerText;
+        string preview = htmlDoc.DocumentNode.SelectSingleNode("//img[@class='wallpaper__image']")!.GetAttributeValue("src", string.Empty);
 
         string extension = preview.Split(".").Last();
         //guess 4k resolution

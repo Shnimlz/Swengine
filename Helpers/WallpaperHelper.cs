@@ -27,7 +27,7 @@ public static class WallpaperHelper
         }
         long CURRENT_TIMESTAMP = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         applicationStatusWrapper.Status = "Downloading Wallpaper...";
-        string downloadResult =  await DownloadHelper.DownloadAsync(wallpaper.SourceFile, wallpaper.Title, wallpaper.NeedsReferrer,referrer  );
+        string? downloadResult =  await DownloadHelper.DownloadAsync(wallpaper.SourceFile!, wallpaper.Title!, wallpaper.NeedsReferrer,referrer!  );
         //if download failed, return and notify user.
         if(downloadResult == null){
             Dispatcher.UIThread.Post(() =>
@@ -52,7 +52,7 @@ public static class WallpaperHelper
         */
 
         //very dangerous with the int.Parse(). Must refine this
-        string convertResult = await FfmpegHelper.ConvertAsync(downloadResult, 0, 5, selectedResolution, fps: int.Parse(selectedFps), bestSettings: bestSettings);
+        string? convertResult = await FfmpegHelper.ConvertAsync(downloadResult, 0, 5, selectedResolution, fps: int.Parse(selectedFps), bestSettings: bestSettings);
         //if conversion failed, return and notify user
         if(convertResult == null){
              Dispatcher.UIThread.Post(() =>

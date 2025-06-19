@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ public class WallHavenService : IBgsProvider
         }
         catch
         {
-            return default;
+           throw new Exception("Error al obtener los wallpapers");
         }
     }
 
@@ -28,7 +29,7 @@ public class WallHavenService : IBgsProvider
         }
         catch
         {
-            return default;
+            throw new Exception("Error al obtener los wallpapers");
         }
 
     }
@@ -42,7 +43,7 @@ public class WallHavenService : IBgsProvider
         }
         catch
         {
-            return default;
+           throw new Exception("Error al obtener los wallpapers");
         }
     }
 }

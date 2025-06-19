@@ -5,15 +5,17 @@ using swengine.desktop.Models;
 namespace swengine.desktop.Services;
 public class LocalBgService : IBgsProvider
 {
-    public async Task<Wallpaper> InfoAsync(string Query, string Title = "")
-    {
-        return new Wallpaper(){
-            NeedsReferrer = false,
-            Preview = Query,
-            SourceFile = Query,
-            Title = Query,
-        };
-    }
+   public async Task<Wallpaper> InfoAsync(string Query, string Title = "")
+        {
+            // Simulación de una operación asincrónica
+            await Task.Delay(100);
+            return new Wallpaper(){
+                NeedsReferrer = false,
+                Preview = Query,
+                SourceFile = Query,
+                Title = Query,
+            };
+        }
 
     public Task<List<WallpaperResponse>> LatestAsync(int Page = 1)
     {

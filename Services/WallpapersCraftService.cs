@@ -6,17 +6,19 @@ using swengine.desktop.Models;
 namespace swengine.desktop.Services;
 public class WallpapersCraftService : IBgsProvider
 {
+
     public async Task<Wallpaper> InfoAsync(string Query, string Title = "")
-    {
-        try
         {
-            return await Scrapers.WallpapersCraftScraper.InfoAsync(Query);
+            try
+            {
+                return await Scrapers.WallpapersCraftScraper.InfoAsync(Query);
+            }
+            catch
+            {
+                throw; // or return a default Wallpaper object
+            }
         }
-        catch
-        {
-            return default;
-        }
-    }
+
 
     public async Task<List<WallpaperResponse>> LatestAsync(int Page = 1)
     {
@@ -27,7 +29,7 @@ public class WallpapersCraftService : IBgsProvider
         }
         catch
         {
-            return default;
+            throw; // or return a default Wallpaper object
         }
     }
 
@@ -39,7 +41,7 @@ public class WallpapersCraftService : IBgsProvider
         }
         catch
         {
-            return default;
+            throw; // or return a default Wallpaper object
         }
     }
 }

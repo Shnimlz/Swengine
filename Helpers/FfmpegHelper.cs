@@ -16,7 +16,7 @@ public static class FfmpegHelper
             GC.Collect();
             GC.WaitForPendingFinalizers();
 
-            string home = Environment.GetEnvironmentVariable("HOME");
+            string? home = Environment.GetEnvironmentVariable("HOME");
 
             if (Path.GetExtension(file).ToLower() != ".mp4" && Path.GetExtension(file).ToLower() != ".mkv")
             {

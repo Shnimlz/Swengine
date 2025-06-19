@@ -88,7 +88,7 @@ public partial class MainWindowViewModel{
             SelectedFile = files[0].TryGetLocalPath() ?? "";
     }
 
-    private object CustomScriptsDialogContent(){
+    private StackPanel CustomScriptsDialogContent(){
          TextBlock customScriptText = new(){
             Text = "Enter commands you want to run after a new wallpaper has been set. One command per line. Substitute \"$1\" for the full path of the newely set wallpaper. TAKE GREAT CAUTION HERE",
             TextWrapping = Avalonia.Media.TextWrapping.Wrap
@@ -139,7 +139,7 @@ public partial class MainWindowViewModel{
             scriptEditor.Width = 620;
             scriptEditor.Height = 315;
             scriptEditor.BorderBrush = null;
-            var result = await scriptEditor.ShowDialog<bool?>(mainWindow);
+            var result = await scriptEditor.ShowDialog<bool?>(mainWindow!);
             if (result == true && !string.IsNullOrWhiteSpace(scriptEditor.ScriptContent))
             {
                 CustomScriptsContent.Text = scriptEditor.ScriptContent;

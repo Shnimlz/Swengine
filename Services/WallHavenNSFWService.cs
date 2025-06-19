@@ -16,7 +16,7 @@ public class WallHavenNSFWService : IBgsProvider
         }
         catch
         {
-            return default;
+            throw;
         }
     }
 
@@ -29,7 +29,7 @@ public class WallHavenNSFWService : IBgsProvider
         }
         catch
         {
-            return default;
+            throw;
         }
 
     }
@@ -43,7 +43,7 @@ public class WallHavenNSFWService : IBgsProvider
         }
         catch
         {
-            return default;
+            throw;
         }
     }
 }

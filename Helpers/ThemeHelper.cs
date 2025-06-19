@@ -14,6 +14,14 @@ namespace Swengine.Helpers
         {
             switch (theme?.ToLower())
             {
+                case "lemon dark":
+                    return (
+                        Color.Parse("#337418"),   // MainBg
+                        Color.Parse("#202020"),   // SecondaryBg
+                        "#F4F5FC",               // TextColor
+                        (Color.Parse("#337418"), Color.Parse("#202020")), // MainBgGradient
+                        (Color.Parse("#202020"), Color.Parse("#337418"))  // SecondaryBgGradient
+                    );
                 case "red dark":
                     return (
                         Color.Parse("#2b0307"), // MainBg
@@ -33,11 +41,11 @@ namespace Swengine.Helpers
                 case "dark":
                 default:
                     return (
-                        Color.Parse("#24293E"),   // MainBg
-                        Color.Parse("#2f3855"),   // SecondaryBg
+                        Color.Parse("#0a0e15"),   // MainBg
+                        Color.Parse("#212631"),   // SecondaryBg
                         "#F4F5FC",               // TextColor
-                        (Color.Parse("#24293E"), Color.Parse("#23243b")), // MainBgGradient
-                        (Color.Parse("#2f3855"), Color.Parse("#23243b"))  // SecondaryBgGradient
+                        (Color.Parse("#0a0e15"), Color.Parse("#212631")), // MainBgGradient
+                        (Color.Parse("#212631"), Color.Parse("#0a0e15"))  // SecondaryBgGradient
                     );
             }
         }
@@ -48,7 +56,7 @@ namespace Swengine.Helpers
         public static List<string> GetAllThemes()
         {
             // Los nombres deben coincidir con los case del switch
-            return new List<string> { "dark", "red dark", "purple" };
+            return new List<string> { "dark", "red dark", "purple", "lemon dark" };
         }
 
         /// <summary>
