@@ -52,13 +52,16 @@ Swengine requiere un alto consumo de memoria RAM para funcionar correctamente. A
 
 Esto es debido a que Swengine utiliza FFMPEG para convertir los wallpapers en GIFs y Swww para aplicarlos cuanta mas resolución y FPS se elija mas memoria se consumirá.
 
+> [!NOTE]
+> Esto es de un wallpaper a q1080p con 60 fps.
+
 ![img](https://i.imgur.com/W8JxxZp.png)
 
-Esto es de un wallpaper a q1080p con 60 fps. 
+> [!NOTE]
+> Esto es de un wallpaper a q2160p con 60 fps, no se nota la diferencia pero el consumo de CPU es significativo.
 
 ![img](https://i.imgur.com/04mXS5w.png)
 
-Esto es de un wallpaper a q2160p con 60 fps, no se nota la diferencia pero el consumo de CPU es significativo.
 
 ---
 
