@@ -32,17 +32,12 @@ public partial class ApplyWindowViewModel : DialogViewModelBase
     //Resolution user selected. Defaults to 4k.
     [ObservableProperty]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ApplyWindowViewModel))]
-    private GifQuality selectedResolution = GifQuality.q2160p;
-
-    //duration selected by user
-    [ObservableProperty] private int selectedDuration = 5;
+    private GifQuality selectedResolution = GifQuality.q1080p;
     //FPS user selected for GIF
-    [ObservableProperty] private string selectedFps = "60";
-
-    //whether to use the best settings for a particular wallpaper
+    [ObservableProperty] private string selectedFps = "30";
 
     [ObservableProperty]
-    private bool bestSettings = true;
+    private bool bestSettings = false;
 
     //Binding that determines if the video in the window is visible. Drawing over NativeControlHost is not very easy in avalonia so we must hide the video whenever we want to display a ContentDialog
     [ObservableProperty] private bool isVideoVisible = true;

@@ -19,8 +19,7 @@ public static class WallpaperHelper
     bool bestSettings, 
     string backend,
     CancellationToken token, 
-    string? referrer = null,
-    IProgress<double>? progress = null
+    string? referrer = null
     )
     {
         if(wallpaper == null){

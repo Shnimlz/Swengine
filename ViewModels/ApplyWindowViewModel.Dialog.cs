@@ -28,18 +28,6 @@ public partial class ApplyWindowViewModel : DialogViewModelBase
 
     private StackPanel ApplyDialogContent()
     {
-        ProgressBar progressBar = new()
-        {
-            Minimum = 0,
-            Maximum = 100,
-            Height = 20
-        };
-        progressBar.Bind(ProgressBar.ValueProperty, new Binding
-        {
-            Source = this,
-            Path = "Progress",
-            Mode = BindingMode.OneWay
-        });
         StackPanel panel = new();
         //resolution selector
         ComboBox ResolutionSelector = new();
@@ -93,7 +81,6 @@ public partial class ApplyWindowViewModel : DialogViewModelBase
         UserSelectedContent.Children.Add(FpsSelectorText);
         UserSelectedContent.Children.Add(FpsSelector);
 
-        panel.Children.Insert(0, progressBar);
         panel.Children.Add(BestSettingsText);
         panel.Children.Add(BestSettingsText2);
         panel.Children.Add(BestSettingsCheckBox);
