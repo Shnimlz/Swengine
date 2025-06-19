@@ -58,7 +58,7 @@ Esta carpeta es creada automáticamente por Steam al instalar y usar Wallpaper E
 
 - `vlc`
 - `ffmpeg`
-- `swww`
+- `swww-git`
 - `dotnet-sdk` version 9.0 (solo para compilar)
 - `git` (solo para compilar)
 

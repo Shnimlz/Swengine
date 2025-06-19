@@ -33,66 +33,19 @@ public static class FfmpegHelper
                 return copyTo;
             }
             string convertTo = home + "/Pictures/wallpapers/" + file.Split("/").Last().Split(".").First() + ".gif";
-
-            // ---- LOOP FIX: extrae primer frame y lo añade al final ----
-            string tmpFirstFrame = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + "_first.jpg");
-            string tmpLoopedVideo = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + "_looped.mp4");
+            string tmpPalette = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + "_palette.png");
 
             try
             {
-                // 1. Extrae el primer frame - OPTIMIZED with memory constraints
-                var extractFrame = new Process
-                {
-                    StartInfo = new()
-                    {
-                        FileName = "ffmpeg",
-                        Arguments = $"-y -threads 1 -hwaccel none -i \"{file}\" -vf \"select=eq(n\\,0)\" -q:v 3 \"{tmpFirstFrame}\"",
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        UseShellExecute = false,
-                        CreateNoWindow = true
-                    }
-                };
-                
-                await RunProcessWithTimeoutAsync(extractFrame, TimeSpan.FromMinutes(2));
-
-                if (!File.Exists(tmpFirstFrame))
-                {
-                    return null;
-                }
-
-                // 2. Añade el primer frame al final del video - OPTIMIZED
-                var concatVideo = new Process
-                {
-                    StartInfo = new()
-                    {
-                        FileName = "ffmpeg",
-                        Arguments = $"-y -threads 2 -hwaccel none -i \"{file}\" -i \"{tmpFirstFrame}\" -filter_complex \"[0:v][1:v]concat=n=2:v=1:a=0\" -c:v libx264 -preset veryfast -crf 23 \"{tmpLoopedVideo}\"",
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        UseShellExecute = false,
-                        CreateNoWindow = true
-                    }
-                };
-
-                await RunProcessWithTimeoutAsync(concatVideo, TimeSpan.FromMinutes(5));
-
-                if (!File.Exists(tmpLoopedVideo))
-                {
-                    return null;
-                }
-
-                // 3. Crear paleta de colores optimizada para wallpaper
-                string tmpPalette = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + "_palette.png");
-                
+                // 1. Crear paleta de colores optimizada directamente del video original
                 var paletteProcess = new Process
                 {
                     StartInfo = new()
                     {
                         FileName = "ffmpeg",
                         Arguments = bestSettings
-                            ? $"-threads 2 -hwaccel none -i \"{tmpLoopedVideo}\" -vf \"palettegen=reserve_transparent=0:max_colors=256:stats_mode=diff\" -y \"{tmpPalette}\""
-                            : $"-threads 2 -hwaccel none -ss {startAt} -t {endAt} -i \"{tmpLoopedVideo}\" -vf \"scale=-1:{QualityParser(quality)}:flags=lanczos,fps={Math.Min(fps, 24)},palettegen=reserve_transparent=0:max_colors=256:stats_mode=diff\" -y \"{tmpPalette}\"",
+                            ? $"-threads 2 -hwaccel none -i \"{file}\" -vf \"palettegen=reserve_transparent=0:max_colors=256:stats_mode=diff\" -y \"{tmpPalette}\""
+                            : $"-threads 2 -hwaccel none -ss {startAt} -t {endAt} -i \"{file}\" -vf \"scale=-1:{QualityParser(quality)}:flags=lanczos,fps={Math.Min(fps, 24)},palettegen=reserve_transparent=0:max_colors=256:stats_mode=diff\" -y \"{tmpPalette}\"",
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
                         UseShellExecute = false,
@@ -107,10 +60,10 @@ public static class FfmpegHelper
                     return null;
                 }
 
-                // 4. Convertir a GIF usando la paleta optimizada para calidad de wallpaper
+                // 2. Convertir a GIF usando la paleta optimizada para calidad de wallpaper, directamente del video original
                 string gifArgs = bestSettings
-                    ? $"-threads 2 -hwaccel none -i \"{tmpLoopedVideo}\" -i \"{tmpPalette}\" -lavfi \"[0:v][1:v]paletteuse=dither=sierra2_4a:diff_mode=rectangle:alpha_threshold=128\" -loop 0 -y \"{convertTo}\""
-                    : $"-threads 2 -hwaccel none -ss {startAt} -t {endAt} -i \"{tmpLoopedVideo}\" -i \"{tmpPalette}\" -lavfi \"scale=-1:{QualityParser(quality)}:flags=lanczos,fps={Math.Min(fps, 24)}[scaled];[scaled][1:v]paletteuse=dither=sierra2_4a:diff_mode=rectangle:alpha_threshold=128\" -loop 0 -y \"{convertTo}\"";
+                    ? $"-threads 2 -hwaccel none -i \"{file}\" -i \"{tmpPalette}\" -lavfi \"[0:v][1:v]paletteuse=dither=sierra2_4a:diff_mode=rectangle:alpha_threshold=128\" -loop 0 -y \"{convertTo}\""
+                    : $"-threads 2 -hwaccel none -ss {startAt} -t {endAt} -i \"{file}\" -i \"{tmpPalette}\" -lavfi \"scale=-1:{QualityParser(quality)}:flags=lanczos,fps={Math.Min(fps, 24)}[scaled];[scaled][1:v]paletteuse=dither=sierra2_4a:diff_mode=rectangle:alpha_threshold=128\" -loop 0 -y \"{convertTo}\"";
 
                 var convertProcess = new Process
                 {
@@ -140,7 +93,7 @@ public static class FfmpegHelper
             finally
             {
                 // Clean up temporary files including palette
-                CleanupTempFiles(tmpFirstFrame, tmpLoopedVideo, Path.Combine(Path.GetTempPath(), "*_palette.png"));
+                CleanupTempFiles(tmpPalette, Path.Combine(Path.GetTempPath(), "*_palette.png"));
             }
         }
         catch (Exception ex)

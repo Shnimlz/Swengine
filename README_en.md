@@ -59,7 +59,7 @@ This folder is automatically created by Steam when you install and use Wallpaper
 
 - `vlc`
 - `ffmpeg`
-- `swww`
+- `swww-git`
 - `dotnet-sdk` version 9.0 (only for compiling)
 - `git` (only for compiling)
 

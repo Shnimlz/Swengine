@@ -21,7 +21,7 @@ namespace swengine.desktop.ViewModels;
 
 public partial class MainWindowViewModel : ObservableObject {
     private const string AurPackageName = "swengine-revanced"; 
-    public bool UpdateAvailable { get; private set; } = false;
+    public bool UpdateAvailable { get; private set; } = true;
     public string? LatestAurVersion { get; private set; }
     public IRelayCommand UpdateCommand { get; }
 
