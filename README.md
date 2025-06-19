@@ -42,6 +42,26 @@ Esto compilará la app y la instalará en tu sistema.
 
 ---
 
+## ⚠️ Alto consumo de memoria RAM
+
+> [!WARNING]
+> No se recomienda usar Swengine con menos de 8GB de RAM.
+> Ni mucho menos en laptops no sabemos si consumira su bateria.
+
+Swengine requiere un alto consumo de memoria RAM para funcionar correctamente. Asegúrate de tener suficiente RAM disponible en tu sistema.
+
+Esto es debido a que Swengine utiliza FFMPEG para convertir los wallpapers en GIFs y Swww para aplicarlos cuanta mas resolución y FPS se elija mas memoria se consumirá.
+
+![img](https://i.imgur.com/W8JxxZp.png)
+
+Esto es de un wallpaper a q1080p con 60 fps. 
+
+![img](https://i.imgur.com/04mXS5w.png)
+
+Esto es de un wallpaper a q2160p con 60 fps, no se nota la diferencia pero el consumo de CPU es significativo.
+
+---
+
 ## ⚠️ Carpeta necesaria para integración con Wallpaper Engine
 
 Para que Swengine pueda importar wallpapers desde Wallpaper Engine, debes tener instalada la aplicación Wallpaper Engine desde Steam en el usuario actual. Es imprescindible que exista la siguiente carpeta en tu sistema:
