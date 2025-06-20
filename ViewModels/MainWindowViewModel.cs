@@ -131,7 +131,7 @@ namespace swengine.desktop.ViewModels
         "Wallpaper Engine",
     };
 
-    public string[] Backends => new[] { "SWWW", "PLASMA", "GNOME" };
+    public string[] Backends => new[] { "SWWW", "MPVPAPER" };
     private bool _appendingToInfinteScroll = false;
 
     private string _selectedProvider = "Motionbgs";

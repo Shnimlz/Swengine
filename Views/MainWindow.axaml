@@ -347,7 +347,7 @@ Ventana principal de la aplicación Swengine con animaciones corregidas usando p
                                         <Border.Background>
                                             <LinearGradientBrush StartPoint="0,0.6" EndPoint="0,1">
                                                 <GradientStop Color="Transparent" Offset="0"/>
-                                                <GradientStop Color="#AA000000" Offset="1"/>
+                                                <GradientStop Color="#66000000" Offset="1"/>
                                             </LinearGradientBrush>
                                         </Border.Background>
                                     </Border>

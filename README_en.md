@@ -106,3 +106,15 @@ swengine
 <p align="center">
   <b>Enjoy your new animated wallpapers on Linux!</b>
 </p>
+
+---
+
+## 🆕 Recent Updates
+
+- **Full support for the MPVPAPER backend:** Use videos as animated wallpapers with low CPU usage.
+- **Automatic switching between SWWW and MPVPAPER:** Applying a wallpaper kills previous processes from the other backend to avoid conflicts.
+- **Automatic startup of swww-daemon:** If not running when applying a wallpaper with SWWW, it will be started automatically.
+- **Optimized mpvpaper arguments:** Adjusted for lower CPU and RAM usage.
+- **Better UX:** Notifications and dialogs now work correctly with persistent wallpapers (mpvpaper).
+
+Check the documentation for updated details and recommendations for each backend.

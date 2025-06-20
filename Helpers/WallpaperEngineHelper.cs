@@ -49,14 +49,4 @@ public static class WallpaperEngineHelper
             }).ToArray();
         });
     }
-    public static async Task<string> ConvertPkgToMp4Async(string scenePkgPath, string outputDirectory)
-    {
-        var sceneDirectory = Path.Combine(outputDirectory, Path.GetFileNameWithoutExtension(scenePkgPath));
-        Directory.CreateDirectory(sceneDirectory);
-
-        var outputFilePath = Path.Combine(outputDirectory, Path.GetFileNameWithoutExtension(scenePkgPath) + ".mp4");
-        var result = await FfmpegHelper.ConvertSceneToMp4Async(sceneDirectory, outputFilePath);
-
-        return result ?? string.Empty;
-    }
 }

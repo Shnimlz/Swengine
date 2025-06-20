@@ -153,6 +153,54 @@ public static class FfmpegHelper
         };
     }
 
+    // Method to convert MP4 to MP4 con opciones personalizadas (resolución, fps, crf)
+    public static async Task<string?> ConvertMp4ToMp4Async(string inputFile, string outputFile, int width = -1, int height = 1080, int fps = 30, int crf = 23)
+    {
+        try
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
+            // Construir filtro de escala si se especifica ancho/alto
+            string scaleFilter = (width > 0 || height > 0) 
+                ? $"scale={(width > 0 ? width.ToString() : "-1")}:{(height > 0 ? height.ToString() : "-1")}" 
+                : string.Empty;
+            string filter = !string.IsNullOrEmpty(scaleFilter) 
+                ? $"-vf \"{scaleFilter},fps={fps}\"" 
+                : $"-vf \"fps={fps}\"";
+
+            string ffmpegArgs = $"-threads 2 -hwaccel none -i \"{inputFile}\" {filter} -c:v libx264 -preset fast -crf {crf} -pix_fmt yuv420p -movflags +faststart -y \"{outputFile}\"";
+
+            var convertProcess = new Process
+            {
+                StartInfo = new()
+                {
+                    FileName = "ffmpeg",
+                    Arguments = ffmpegArgs,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+
+            await RunProcessWithTimeoutAsync(convertProcess, TimeSpan.FromMinutes(5));
+
+            if (!File.Exists(outputFile))
+            {
+                Debug.WriteLine("Output MP4 file was not created");
+                return null;
+            }
+
+            return outputFile;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error in ConvertMp4ToMp4Async: {ex.Message}");
+            return null;
+        }
+    }
+
     // Method to convert extracted scene resources to mp4 - OPTIMIZED
     public static async Task<string?> ConvertSceneToMp4Async(string sceneDirectory, string outputFile)
     {

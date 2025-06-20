@@ -16,6 +16,95 @@ public static class SwwwHelper
 {
     try
     {
+        // Si el backend es MPVPAPER, mata swww y mpvpaper antes de lanzar mpvpaper
+        if (backend == "MPVPAPER")
+        {
+            // 1. Mata swww
+            var killSwww = new Process()
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "swww",
+                    Arguments = "kill",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+            killSwww.Start();
+            killSwww.WaitForExit();
+            // 2. Mata mpvpaper
+            var killMpvpaper = new Process()
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "pkill",
+                    Arguments = $"-u {Environment.UserName} mpvpaper",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+            killMpvpaper.Start();
+            killMpvpaper.WaitForExit();
+            await Task.Delay(500); // Espera breve para asegurar cierre
+        }
+        // Si el backend es SWWW, mata mpvpaper antes de lanzar swww
+        else if (backend == "SWWW")
+        {
+            var killMpvpaper = new Process()
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "pkill",
+                    Arguments = $"-u {Environment.UserName} mpvpaper",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+            killMpvpaper.Start();
+            killMpvpaper.WaitForExit();
+            await Task.Delay(500); // Espera breve para asegurar cierre
+
+            // Verifica si swww-daemon está corriendo, si no, lo lanza
+            var checkDaemon = new Process()
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "pgrep",
+                    Arguments = "swww-daemon",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+            checkDaemon.Start();
+            string output = await checkDaemon.StandardOutput.ReadToEndAsync();
+            checkDaemon.WaitForExit();
+            if (string.IsNullOrWhiteSpace(output))
+            {
+                // Lanzar swww-daemon &
+                var startDaemon = new Process()
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "swww-daemon",
+                        Arguments = "",
+                        RedirectStandardOutput = false,
+                        RedirectStandardError = false,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    }
+                };
+                startDaemon.Start();
+                await Task.Delay(800); // Espera un poco para asegurar que el daemon arranque
+            }
+        }
         var applyProcess = new Process()
         {
             StartInfo = ApplyProcessStartInfo(backend, file)
@@ -28,19 +117,36 @@ public static class SwwwHelper
                 Debug.WriteLine($"Received Error: {errorArgs.Data}");
             }
         };
-        applyProcess.Start();
-        applyProcess.BeginErrorReadLine();
-        applyProcess.BeginOutputReadLine();
-        await applyProcess.WaitForExitAsync(); // Utilizar await para esperar a que el proceso termine
 
-        //send notification
-        Process.Start(new ProcessStartInfo()
+        if (backend == "MPVPAPER")
         {
-            FileName = "notify-send",
-            Arguments = "\"Wallpaper set succesfully\"",
-            UseShellExecute = false,
-            CreateNoWindow = true,
-        });
+            applyProcess.Start();
+            // Notificación inmediata, no esperar a que termine
+            Process.Start(new ProcessStartInfo()
+            {
+                FileName = "notify-send",
+                Arguments = "\"Wallpaper set succesfully\"",
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            });
+            return true;
+        }
+        else
+        {
+            applyProcess.Start();
+            applyProcess.BeginErrorReadLine();
+            applyProcess.BeginOutputReadLine();
+            await applyProcess.WaitForExitAsync(); // Utilizar await para esperar a que el proceso termine
+
+            //send notification
+            Process.Start(new ProcessStartInfo()
+            {
+                FileName = "notify-send",
+                Arguments = "\"Wallpaper set succesfully\"",
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            });
+        }
 
         //run custom scripts asynchronously, basically a fire and forget
         if (File.Exists(CustomScriptsHelper.scripts_location))
@@ -70,7 +176,7 @@ public static class SwwwHelper
         switch(backend){
             case "SWWW":
                 filename = "swww";
-                arguments = $"img --transition-type none --transition-fps 1 \"{file}\"";
+                arguments = $"img --transition-type none --transition-fps 15 \"{file}\"";
                 break;
             case "PLASMA":
                 filename = "plasma-apply-wallpaperimage";
@@ -80,7 +186,10 @@ public static class SwwwHelper
                 filename = "gsettings";
                 arguments = $"set org.gnome.desktop.background picture-uri \"{file}\"";
                 break;
-            
+            case "MPVPAPER":
+                filename = "mpvpaper";
+                arguments = $"-o \"--loop --no-audio --hwdec=auto-safe --vd-lavc-threads=2 --framedrop=vo --profile=low-latency --no-config --no-input-default-bindings --no-osc --no-osd-bar --no-border --keepaspect=yes --untimed\" all \"{file}\"";
+                break;
         }
         Console.WriteLine(filename + " "+arguments);
       return new(){

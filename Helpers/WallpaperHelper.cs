@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
@@ -51,8 +52,30 @@ public static class WallpaperHelper
         *       Download complete begin conversion
         */
 
-        //very dangerous with the int.Parse(). Must refine this
-        string? convertResult = await FfmpegHelper.ConvertAsync(downloadResult, 0, 5, selectedResolution, fps: int.Parse(selectedFps), bestSettings: bestSettings);
+        string? convertResult = null;
+        if (backend == "SWWW")
+        {
+            // Convertir a GIF para swww
+            convertResult = await FfmpegHelper.ConvertAsync(downloadResult, 0, 5, selectedResolution, fps: int.Parse(selectedFps), bestSettings: bestSettings);
+        }
+        else if (backend == "MPVPAPER")
+        {
+            // Convertir a MP4 con opciones para mpvpaper
+            string outputFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Pictures", "wallpapers", Path.GetFileNameWithoutExtension(downloadResult) + "_mpvpaper.mp4");
+            convertResult = await FfmpegHelper.ConvertMp4ToMp4Async(
+                downloadResult,
+                outputFile,
+                width: -1, // Puedes ajustar para soportar resolución personalizada si lo deseas
+                height: int.TryParse(selectedResolution.ToString().Replace("q", "").Replace("p", ""), out var h) ? h : 1080,
+                fps: int.TryParse(selectedFps, out var f) ? f : 30,
+                crf: bestSettings ? 18 : 23
+            );
+        }
+        else
+        {
+            // Otros backends: usa ConvertAsync como antes
+            convertResult = await FfmpegHelper.ConvertAsync(downloadResult, 0, 5, selectedResolution, fps: int.Parse(selectedFps), bestSettings: bestSettings);
+        }
         //if conversion failed, return and notify user
         if(convertResult == null){
              Dispatcher.UIThread.Post(() =>
