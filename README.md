@@ -73,10 +73,7 @@ Para que Swengine pueda importar wallpapers desde Wallpaper Engine, debes tener 
 /home/[tu_usuario]/.local/share/Steam/steamapps/workshop/content/431960/
 ```
 
-<video width="560" height="315" controls>
-  <source src="https://i.imgur.com/LkrnLm7.mp4" type="video/mp4">
-  Tu navegador no soporta la reproducción de video.
-</video>
+<video src="https://github.com/Shnimlz/Swengine/raw/main/example/_wallpaper.mp4" controls="controls" width="560" height="315"></video>
 
 Esta carpeta es creada automáticamente por Steam al instalar y usar Wallpaper Engine. Si no existe, Swengine no podrá importar wallpapers desde Wallpaper Engine.
 
