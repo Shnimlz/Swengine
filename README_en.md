@@ -51,6 +51,11 @@ For Swengine to import wallpapers from Wallpaper Engine, you must have Wallpaper
 /home/[your_user]/.local/share/Steam/steamapps/workshop/content/431960/
 ```
 
+<video width="560" height="315" controls>
+  <source src="https://i.imgur.com/LkrnLm7.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
 This folder is automatically created by Steam when you install and use Wallpaper Engine. If it does not exist, Swengine will not be able to import wallpapers from Wallpaper Engine.
 
 ---
